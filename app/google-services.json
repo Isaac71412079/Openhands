@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "826104963999",
+    "project_id": "openhands-b903e",
+    "storage_bucket": "openhands-b903e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:826104963999:android:c960ae7248dde40df993aa",
+        "android_client_info": {
+          "package_name": "com.example.openhands"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrZgetZ9T23Y5yHcpz0PvIDN1Zh7YAJOk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
