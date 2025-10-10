@@ -3,6 +3,9 @@ package com.example.openhands
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -14,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.login.presentation.LoginScreen
+import com.example.openhands.features.splash.presentation.SplashScreen
 import com.example.openhands.navigation.Screen
 import com.example.openhands.ui.theme.OpenhandsTheme
 
@@ -23,31 +27,33 @@ class MainActivity : ComponentActivity() {
         setContent {
             OpenhandsTheme {
                 val rootNavController = rememberNavController()
-
-                // Definimos una ruta simple para la pantalla de bienvenida.
                 val greetingRoute = "greeting_screen"
 
                 NavHost(
                     navController = rootNavController,
-                    startDestination = Screen.Login.route // La app siempre empieza en Login
+                    startDestination = Screen.Splash.route
                 ) {
-                    // Destino 1: La pantalla de Login
-                    composable(Screen.Login.route) {
+                    composable(Screen.Splash.route) {
+                        SplashScreen(
+                            onSplashFinished = {
+                                rootNavController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                    composable(Screen.Login.route
+                        ) {
                         LoginScreen(
                             onLoginSuccess = {
-                                // Al tener éxito, navega a la pantalla de bienvenida.
                                 rootNavController.navigate(greetingRoute) {
-                                    // Limpia el back stack para que el usuario no pueda
-                                    // volver a la pantalla de Login con el botón de retroceso.
                                     popUpTo(Screen.Login.route) { inclusive = true }
                                 }
                             }
                         )
                     }
 
-                    // Destino 2: La pantalla de bienvenida "Hello Android"
                     composable(greetingRoute) {
-                        // Centramos el saludo en la pantalla.
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
