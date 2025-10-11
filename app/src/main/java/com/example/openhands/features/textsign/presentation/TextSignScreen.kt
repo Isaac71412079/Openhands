@@ -29,7 +29,7 @@ fun TextSignScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { /* El título está en el cuerpo de la pantalla */ },
+                title = {  },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -102,12 +102,12 @@ fun TextSignScreen(
             Button(
                 onClick = viewModel::onTranslateClicked,
                 modifier = Modifier
-                    .fillMaxWidth(0.8f) // El botón no ocupa todo el ancho
+                    .fillMaxWidth(0.8f)
                     .height(57.dp),
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF0E8FF), // Color lavanda/rosa claro
-                    contentColor = Color(0xFF152C58)    // Texto azul oscuro
+                    containerColor = Color(0xFFF0E8FF),
+                    contentColor = Color(0xFF152C58)
                 )
             ) {
                 Text(

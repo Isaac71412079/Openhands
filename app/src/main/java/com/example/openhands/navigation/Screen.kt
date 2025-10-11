@@ -8,5 +8,5 @@ sealed class Screen(val route: String) {
     object Home: Screen("home_screen")
 
     object TextSign : Screen("text_sign_screen")
-    object ImageAction: Screen("image_action_screen")
-}
+
+    object SignCamera : Screen("sign_camera_screen")}

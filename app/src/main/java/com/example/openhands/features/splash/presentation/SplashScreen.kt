@@ -25,17 +25,15 @@ import kotlinx.coroutines.launch
 fun SplashScreen(
     onSplashFinished: () -> Unit
 ) {
-    // Dos animaciones para un efecto más suave: una para la escala y otra para la opacidad (fade-in).
     val scale = remember { Animatable(0.5f) } // Empezamos desde la mitad del tamaño
     val alpha = remember { Animatable(0f) }   // Empezamos completamente transparente
 
     // Un solo LaunchedEffect para controlar toda la lógica y evitar conflictos.
     LaunchedEffect(key1 = true) {
-        // Ejecutamos ambas animaciones al mismo tiempo (concurrentemente)
         launch {
             scale.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 1200) // Animación más larga y suave
+                animationSpec = tween(durationMillis = 1200)
             )
         }
         launch {
@@ -45,8 +43,7 @@ fun SplashScreen(
             )
         }
 
-        // Esperamos un total de 2.5 segundos.
-        // Esto le da tiempo a la animación de completarse y al usuario de ver el logo.
+
         delay(2500L)
         onSplashFinished()
     }
@@ -54,8 +51,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            // CAMBIO CLAVE: Usamos el mismo fondo azul sólido que en WelcomeScreen.
-            // Esto elimina el "salto" de color y hace la transición invisible.
+
             .background(Color(0xFF152C58)),
         contentAlignment = Alignment.Center
     ) {
@@ -64,8 +60,8 @@ fun SplashScreen(
             contentDescription = "Logo de Openhands",
             modifier = Modifier
                 .size(350.dp)
-                .scale(scale.value) // Aplicamos la animación de escala
-                .alpha(alpha.value) // Aplicamos la animación de opacidad
+                .scale(scale.value)
+                .alpha(alpha.value)
         )
     }
 }

@@ -20,10 +20,9 @@ class TextSignViewModel(
     }
 
     fun onTranslateClicked() {
-        // Por ahora, no hacemos nada, pero en el futuro llamaríamos al UseCase
+
         viewModelScope.launch {
-            // translateTextUseCase.invoke(inputText)
-            // Aquí se manejaría el resultado para mostrarlo en la UI
+
         }
     }
 }

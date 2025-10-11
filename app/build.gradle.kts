@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -78,4 +80,9 @@ dependencies {
     annotationProcessor(libs.room.compiler)
     ksp(libs.room.compiler)
     testImplementation(libs.room.testing)
+
+
+    implementation(libs.bundles.camerax)
+
+    implementation(libs.google.accompanist.permissions)
 }

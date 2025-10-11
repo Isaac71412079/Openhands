@@ -16,7 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.home.presentation.HomeScreen
 import com.example.openhands.features.login.presentation.LoginScreen
-// CAMBIO: Importamos la nueva pantalla de traducción
+// CAMBIO: Se añade el import para la pantalla de la cámara
+import com.example.openhands.features.signcamera.presentation.SignCameraScreen
 import com.example.openhands.features.textsign.presentation.TextSignScreen
 import com.example.openhands.features.welcome.presentation.SplashAndWelcomeScreen
 import com.example.openhands.navigation.Screen
@@ -60,28 +61,31 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.Home.route) {
                         HomeScreen(
                             onTextActionClick = {
-                                // CAMBIO: Navega a la nueva ruta Screen.TextSign.route
                                 rootNavController.navigate(Screen.TextSign.route)
                             },
                             onImageActionClick = {
-                                rootNavController.navigate(Screen.ImageAction.route)
+                                // Esto ya estaba bien, apunta a la ruta correcta
+                                rootNavController.navigate(Screen.SignCamera.route)
                             }
                         )
                     }
 
-                    // CAMBIO: Se reemplazó la ruta de TextAction por la nueva de TextSign
                     composable(Screen.TextSign.route) {
                         TextSignScreen(
                             onNavigateBack = {
-                                // Esta lambda permite que el botón de retroceso en la TopAppBar funcione
                                 rootNavController.navigateUp()
                             }
                         )
                     }
 
-                    // La pantalla para ImageAction sigue siendo el placeholder
-                    composable(Screen.ImageAction.route) {
-                        HelloScreen("Image Action")
+                    // CAMBIO: Se reemplaza la ruta y el contenido de 'ImageAction'
+                    // por la nueva pantalla de la cámara 'SignCamera'.
+                    composable(Screen.SignCamera.route) {
+                        SignCameraScreen(
+                            onNavigateBack = {
+                                rootNavController.navigateUp()
+                            }
+                        )
                     }
                 }
             }

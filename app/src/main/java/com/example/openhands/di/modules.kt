@@ -20,6 +20,10 @@ import com.example.openhands.features.textsign.domain.repository.ITextSignReposi
 import com.example.openhands.features.textsign.domain.usecase.TranslateTextUseCase
 import com.example.openhands.features.textsign.presentation.TextSignViewModel
 
+import com.example.openhands.features.signcamera.data.repository.SignCameraRepository
+import com.example.openhands.features.signcamera.domain.repository.ISignCameraRepository
+import com.example.openhands.features.signcamera.presentation.SignCameraViewModel
+
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -43,4 +47,10 @@ val appModule = module {
     factory<ITextSignRepository> { TextSignRepository() }
     factory { TranslateTextUseCase(repository = get()) }
     viewModel { TextSignViewModel(translateTextUseCase = get()) }
+
+
+    factory<ISignCameraRepository> { SignCameraRepository() }
+    // No tenemos UseCase en el ViewModel todavía, así que no lo añadimos
+    viewModel { SignCameraViewModel() }
+
 }
