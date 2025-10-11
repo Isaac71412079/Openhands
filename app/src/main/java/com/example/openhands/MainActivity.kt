@@ -16,7 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.home.presentation.HomeScreen
 import com.example.openhands.features.login.presentation.LoginScreen
-// CAMBIO: Importamos la nueva pantalla combinada
+// CAMBIO: Importamos la nueva pantalla de traducción
+import com.example.openhands.features.textsign.presentation.TextSignScreen
 import com.example.openhands.features.welcome.presentation.SplashAndWelcomeScreen
 import com.example.openhands.navigation.Screen
 import com.example.openhands.ui.theme.OpenhandsTheme
@@ -31,17 +32,12 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = rootNavController,
-                    // CAMBIO: La ruta de inicio ahora es la nueva pantalla combinada.
                     startDestination = Screen.SplashAndWelcome.route
                 ) {
-                    // CAMBIO: Se eliminaron los composables para 'Splash' y 'Welcome'.
-                    // Ahora tenemos un único composable para la experiencia inicial.
                     composable(Screen.SplashAndWelcome.route) {
                         SplashAndWelcomeScreen(
                             onLoginClicked = {
                                 rootNavController.navigate(Screen.Login.route) {
-                                    // Limpiamos el backstack para que el usuario no pueda
-                                    // volver a la pantalla de bienvenida con el botón de retroceso.
                                     popUpTo(Screen.SplashAndWelcome.route) { inclusive = true }
                                 }
                             },
@@ -55,18 +51,17 @@ class MainActivity : ComponentActivity() {
                         LoginScreen(
                             onLoginSuccess = {
                                 rootNavController.navigate(Screen.Home.route) {
-                                    // CAMBIO: Al iniciar sesión, eliminamos la pantalla de login del backstack.
                                     popUpTo(Screen.Login.route) { inclusive = true }
                                 }
                             }
                         )
                     }
 
-                    // Las otras rutas no han cambiado.
                     composable(Screen.Home.route) {
                         HomeScreen(
                             onTextActionClick = {
-                                rootNavController.navigate(Screen.TextAction.route)
+                                // CAMBIO: Navega a la nueva ruta Screen.TextSign.route
+                                rootNavController.navigate(Screen.TextSign.route)
                             },
                             onImageActionClick = {
                                 rootNavController.navigate(Screen.ImageAction.route)
@@ -74,10 +69,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable(Screen.TextAction.route) {
-                        HelloScreen("Text Action")
+                    // CAMBIO: Se reemplazó la ruta de TextAction por la nueva de TextSign
+                    composable(Screen.TextSign.route) {
+                        TextSignScreen(
+                            onNavigateBack = {
+                                // Esta lambda permite que el botón de retroceso en la TopAppBar funcione
+                                rootNavController.navigateUp()
+                            }
+                        )
                     }
 
+                    // La pantalla para ImageAction sigue siendo el placeholder
                     composable(Screen.ImageAction.route) {
                         HelloScreen("Image Action")
                     }

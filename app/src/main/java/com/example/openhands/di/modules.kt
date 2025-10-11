@@ -14,6 +14,12 @@ import com.example.openhands.features.home.domain.repository.IHomeRepository
 import com.example.openhands.features.home.domain.usecase.HomeUseCase
 import com.example.openhands.features.home.presentation.HomeViewModel
 
+
+import com.example.openhands.features.textsign.data.repository.TextSignRepository
+import com.example.openhands.features.textsign.domain.repository.ITextSignRepository
+import com.example.openhands.features.textsign.domain.usecase.TranslateTextUseCase
+import com.example.openhands.features.textsign.presentation.TextSignViewModel
+
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -33,4 +39,8 @@ val appModule = module {
     factory { HomeUseCase(repository = get()) }
 
     viewModel { HomeViewModel(homeUseCase = get()) }
+    // --- TEXTSIGN ---
+    factory<ITextSignRepository> { TextSignRepository() }
+    factory { TranslateTextUseCase(repository = get()) }
+    viewModel { TextSignViewModel(translateTextUseCase = get()) }
 }
