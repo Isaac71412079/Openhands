@@ -1,4 +1,3 @@
-
 package com.example.openhands.di
 
 // Imports de Login
@@ -14,12 +13,13 @@ import com.example.openhands.features.home.domain.repository.IHomeRepository
 import com.example.openhands.features.home.domain.usecase.HomeUseCase
 import com.example.openhands.features.home.presentation.HomeViewModel
 
-
+// Imports de TextSign
 import com.example.openhands.features.textsign.data.repository.TextSignRepository
 import com.example.openhands.features.textsign.domain.repository.ITextSignRepository
 import com.example.openhands.features.textsign.domain.usecase.TranslateTextUseCase
 import com.example.openhands.features.textsign.presentation.TextSignViewModel
 
+// Imports de SignCamera (ahora deberían funcionar porque el paquete se llama 'signcamera')
 import com.example.openhands.features.signcamera.data.repository.SignCameraRepository
 import com.example.openhands.features.signcamera.domain.repository.ISignCameraRepository
 import com.example.openhands.features.signcamera.presentation.SignCameraViewModel
@@ -37,20 +37,18 @@ val appModule = module {
     viewModel { LoginViewModel(get(), get()) }
 
     // --- HOME ---
-    // Esta es la línea que corregimos. Se eliminó el guion de IHomeRepository
-    factory<IHomeRepository> { HomeRepository() }
-
+    single<IHomeRepository> { HomeRepository() }
     factory { HomeUseCase(repository = get()) }
-
     viewModel { HomeViewModel(homeUseCase = get()) }
+
     // --- TEXTSIGN ---
-    factory<ITextSignRepository> { TextSignRepository() }
+    single<ITextSignRepository> { TextSignRepository() }
     factory { TranslateTextUseCase(repository = get()) }
-    viewModel { TextSignViewModel(translateTextUseCase = get()) }
+    // CORREGIDO: Le pasamos las dos dependencias que necesita
+    viewModel { TextSignViewModel(get(), get()) }
 
-
-    factory<ISignCameraRepository> { SignCameraRepository() }
-    // No tenemos UseCase en el ViewModel todavía, así que no lo añadimos
+    // --- SIGNCAMERA ---
+    single<ISignCameraRepository> { SignCameraRepository() }
     viewModel { SignCameraViewModel() }
 
 }
