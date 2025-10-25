@@ -1,13 +1,14 @@
 {
   "project_info": {
-    "project_number": "618336497155",
-    "project_id": "openhands-6f94b",
-    "storage_bucket": "openhands-6f94b.firebasestorage.app"
+    "project_number": "227177522869",
+    "firebase_url": "https://openhands-d0ef4-default-rtdb.firebaseio.com",
+    "project_id": "openhands-d0ef4",
+    "storage_bucket": "openhands-d0ef4.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:618336497155:android:c8948cd43997960ede2836",
+        "mobilesdk_app_id": "1:227177522869:android:6179ad90a5c6c6893ec0fc",
         "android_client_info": {
           "package_name": "com.example.openhands"
         }
@@ -15,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCxCD6vaFQo4toFFY5d-nAOTEiY1RY8rzk"
+          "current_key": "AIzaSyCXcLllQ1SovzNZ7lsmOfg7nQM5IoSQiQQ"
         }
       ],
       "services": {
