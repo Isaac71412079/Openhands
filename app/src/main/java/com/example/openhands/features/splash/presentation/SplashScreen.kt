@@ -25,10 +25,9 @@ import kotlinx.coroutines.launch
 fun SplashScreen(
     onSplashFinished: () -> Unit
 ) {
-    val scale = remember { Animatable(0.5f) } // Empezamos desde la mitad del tamaño
-    val alpha = remember { Animatable(0f) }   // Empezamos completamente transparente
+    val scale = remember { Animatable(0.5f) }
+    val alpha = remember { Animatable(0f) }
 
-    // Un solo LaunchedEffect para controlar toda la lógica y evitar conflictos.
     LaunchedEffect(key1 = true) {
         launch {
             scale.animateTo(

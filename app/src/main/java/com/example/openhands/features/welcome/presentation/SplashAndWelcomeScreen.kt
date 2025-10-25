@@ -63,7 +63,7 @@ fun SplashAndWelcomeScreen(
             Image(
                 painter = painterResource(id = R.drawable.openhands),
                 contentDescription = "Logo de Openhands",
-                modifier = Modifier.size(logoSize) // Usamos el tamaño animado
+                modifier = Modifier.size(logoSize)
             )
 
 
