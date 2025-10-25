@@ -18,7 +18,7 @@ navcompose = "2.9.3"
 googleGmsGoogleServices = "4.4.3"
 firebaseDatabase = "22.0.0"
 roomCommonJvm = "2.8.0"
-ksp = "2.0.20-1.0.24"
+ksp = "2.0.21-1.0.24"
 room = "2.8.0"
 firebaseMessaging = "25.0.1"
 datastore = "1.1.1"
@@ -79,7 +79,7 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
-ksp = { id = "com.google.devtools.ksp", version.ref="ksp"}
+ksp = { id = "com.google.devtools.ksp", version = "2.0.21-1.0.25" }
 
 [bundles]
 local = ["room-runtime", "room-ktx", "room-rxjava2", "room-rxjava3", "room-guava", "room-paging" ]

@@ -22,6 +22,7 @@ import com.example.openhands.features.textsign.presentation.TextSignScreen
 import com.example.openhands.features.welcome.presentation.SplashAndWelcomeScreen
 import com.example.openhands.navigation.Screen
 import com.example.openhands.ui.theme.OpenhandsTheme
+import com.example.openhands.features.auth.presentation.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onRegisterClicked = {
-                                Toast.makeText(context, "Función no disponible aún", Toast.LENGTH_SHORT).show()
+                                rootNavController.navigate(Screen.Register.route)
                             }
                         )
                     }
@@ -53,6 +54,16 @@ class MainActivity : ComponentActivity() {
                             onLoginSuccess = {
                                 rootNavController.navigate(Screen.Home.route) {
                                     popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+
+                    composable(Screen.Register.route) {
+                        RegisterScreen(
+                            onRegisterSuccess = {
+                                rootNavController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.SplashAndWelcome.route) { inclusive = false }
                                 }
                             }
                         )
