@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.openhands.features.home.presentation.HistoryScreen
 import com.example.openhands.features.home.presentation.HomeScreen
 import com.example.openhands.features.login.presentation.LoginScreen
 // CAMBIO: Se añade el import para la pantalla de la cámara
@@ -64,8 +65,19 @@ class MainActivity : ComponentActivity() {
                                 rootNavController.navigate(Screen.TextSign.route)
                             },
                             onImageActionClick = {
-                                // Esto ya estaba bien, apunta a la ruta correcta
                                 rootNavController.navigate(Screen.SignCamera.route)
+                            },
+                            onHistoryClick = {
+                                // Esto ahora funcionará porque Screen.History existe
+                                rootNavController.navigate(Screen.History.route)
+                            }
+                        )
+                    }
+
+                    composable(Screen.History.route) {
+                        HistoryScreen(
+                            onNavigateBack = {
+                                rootNavController.navigateUp()
                             }
                         )
                     }

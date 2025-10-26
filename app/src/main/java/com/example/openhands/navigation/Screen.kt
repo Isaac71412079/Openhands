@@ -9,4 +9,9 @@ sealed class Screen(val route: String) {
 
     object TextSign : Screen("text_sign_screen")
 
-    object SignCamera : Screen("sign_camera_screen")}
+    object SignCamera : Screen("sign_camera_screen")
+
+    // --- CORRECCIÓN ---
+    // El object History debe estar DENTRO de la clase Screen
+    object History: Screen("history_screen")
+}
