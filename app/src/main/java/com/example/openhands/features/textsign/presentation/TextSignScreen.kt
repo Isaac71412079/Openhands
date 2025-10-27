@@ -75,16 +75,37 @@ fun TextSignScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
 
+            // --- INICIO DE LA MODIFICACIÓN ---
+
+            // 1. Espacio para mostrar la imagen.
+            // Usamos un Box para que ocupe espacio aunque no haya imagen.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp) // Damos una altura fija al contenedor de la imagen
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Si hay una imagen para mostrar en el ViewModel, la pintamos.
+                viewModel.imageResId?.let { imageId ->
+                    Image(
+                        painter = painterResource(id = imageId),
+                        contentDescription = "Imagen de la seña",
+                        modifier = Modifier.size(200.dp) // Tamaño de la imagen
+                    )
+                }
+            }
+
+            // 2. El campo de texto se ajusta
             OutlinedTextField(
                 value = viewModel.inputText,
                 onValueChange = viewModel::onTextChanged,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
+                    .fillMaxWidth(), // Quitamos la altura fija de 200.dp
                 placeholder = { Text("Ingrese Texto...") },
                 shape = RoundedCornerShape(20.dp),
+                singleLine = true, // Ideal para una sola palabra o letra
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.Black,
                     unfocusedTextColor = Color.Black,
@@ -97,8 +118,9 @@ fun TextSignScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
+            // 3. El botón se mantiene igual, su lógica está en el ViewModel
             Button(
                 onClick = viewModel::onTranslateClicked,
                 modifier = Modifier
