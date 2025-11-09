@@ -9,13 +9,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-// --- 1. AÑADIR ESTE IMPORT ---
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,9 +28,9 @@ import com.example.openhands.R
 @Composable
 fun TextSignScreen(
     viewModel: TextSignViewModel = koinViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToMoreLanguages: () -> Unit
 ) {
-    // --- 2. OBTENER EL CONTROLADOR DEL TECLADO ---
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
@@ -74,7 +74,7 @@ fun TextSignScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "TRADUCCIÓN DE TEXTO A SEÑAS",
+                    text = "Texto a Señas LSB",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -88,32 +88,58 @@ fun TextSignScreen(
                         .fillMaxWidth(1f)
                         .height(220.dp)
                         .background(Color.White, shape = RoundedCornerShape(20.dp)),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
-                    viewModel.imageResId?.let { imageId ->
+                    if (viewModel.imageResId == null) {
+                        // Estado inicial cuando no hay imagen
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ImageSearch,
+                                contentDescription = "Placeholder de imagen",
+                                modifier = Modifier.size(80.dp),
+                                tint = Color.LightGray
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "La seña aparecerá aquí",
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    } else {
+                        // Muestra la imagen cuando está disponible
                         Image(
-                            painter = painterResource(id = imageId),
+                            painter = painterResource(id = viewModel.imageResId!!),
                             contentDescription = "Imagen de la seña",
                             modifier = Modifier.fillMaxSize(0.99f)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text = "Historial Reciente",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    // Contenido del historial aquí...
+                Button(
+                    onClick = onNavigateToMoreLanguages,
+                    modifier = Modifier.fillMaxWidth(0.8f),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFF0E8FF),
+                        contentColor = Color(0xFF152C58)
+                    )
+                ) {
+                    Text(
+                        text = "+ Más idiomas",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                Spacer(modifier = Modifier.height(80.dp))
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
             Row(
@@ -146,10 +172,9 @@ fun TextSignScreen(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 IconButton(
-                    // --- 3. MODIFICAR EL EVENTO ONCLICK ---
                     onClick = {
                         viewModel.onTranslateClicked()
-                        keyboardController?.hide() // Oculta el teclado
+                        keyboardController?.hide()
                     },
                     modifier = Modifier
                         .size(56.dp)
