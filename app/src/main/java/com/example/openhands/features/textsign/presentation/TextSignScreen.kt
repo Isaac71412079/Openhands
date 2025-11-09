@@ -3,16 +3,20 @@ package com.example.openhands.features.textsign.presentation
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+// --- 1. AÑADIR ESTE IMPORT ---
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,10 +30,13 @@ fun TextSignScreen(
     viewModel: TextSignViewModel = koinViewModel(),
     onNavigateBack: () -> Unit
 ) {
+    // --- 2. OBTENER EL CONTROLADOR DEL TECLADO ---
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {  },
+                title = { },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -50,93 +57,110 @@ fun TextSignScreen(
                             .clip(CircleShape)
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    actionIconContentColor = Color.White
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
         containerColor = Color(0xFF152C58)
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = "TRADUCCIÓN DE TEXTO A SEÑAS",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-
-
-            // --- INICIO DE LA MODIFICACIÓN ---
-
-            // 1. Espacio para mostrar la imagen.
-            // Usamos un Box para que ocupe espacio aunque no haya imagen.
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp) // Damos una altura fija al contenedor de la imagen
-                    .padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // Si hay una imagen para mostrar en el ViewModel, la pintamos.
-                viewModel.imageResId?.let { imageId ->
-                    Image(
-                        painter = painterResource(id = imageId),
-                        contentDescription = "Imagen de la seña",
-                        modifier = Modifier.size(200.dp) // Tamaño de la imagen
-                    )
-                }
-            }
-
-            // 2. El campo de texto se ajusta
-            OutlinedTextField(
-                value = viewModel.inputText,
-                onValueChange = viewModel::onTextChanged,
-                modifier = Modifier
-                    .fillMaxWidth(), // Quitamos la altura fija de 200.dp
-                placeholder = { Text("Ingrese Texto...") },
-                shape = RoundedCornerShape(20.dp),
-                singleLine = true, // Ideal para una sola palabra o letra
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    cursorColor = Color(0xFF152C58),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                )
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 3. El botón se mantiene igual, su lógica está en el ViewModel
-            Button(
-                onClick = viewModel::onTranslateClicked,
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .height(57.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF0E8FF),
-                    contentColor = Color(0xFF152C58)
-                )
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Traducir",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    text = "TRADUCCIÓN DE TEXTO A SEÑAS",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .height(220.dp)
+                        .background(Color.White, shape = RoundedCornerShape(20.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    viewModel.imageResId?.let { imageId ->
+                        Image(
+                            painter = painterResource(id = imageId),
+                            contentDescription = "Imagen de la seña",
+                            modifier = Modifier.fillMaxSize(0.99f)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Historial Reciente",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    // Contenido del historial aquí...
+                }
+                Spacer(modifier = Modifier.height(80.dp))
+            }
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(Color(0xFF152C58))
+                    .padding(horizontal = 24.dp, vertical = 12.dp)
+                    .imePadding(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = viewModel.inputText,
+                    onValueChange = viewModel::onTextChanged,
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Ingrese Texto...") },
+                    shape = RoundedCornerShape(20.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        cursorColor = Color(0xFF152C58),
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                    )
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(
+                    // --- 3. MODIFICAR EL EVENTO ONCLICK ---
+                    onClick = {
+                        viewModel.onTranslateClicked()
+                        keyboardController?.hide() // Oculta el teclado
+                    },
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(Color(0xFFF0E8FF), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Traducir",
+                        tint = Color(0xFF152C58)
+                    )
+                }
             }
         }
     }
