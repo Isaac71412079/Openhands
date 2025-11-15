@@ -112,7 +112,6 @@ fun TextSignScreen(
                             )
                         }
                     } else {
-                        // Muestra la imagen cuando está disponible
                         Image(
                             painter = painterResource(id = viewModel.imageResId!!),
                             contentDescription = "Imagen de la seña",
