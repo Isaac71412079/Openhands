@@ -1,5 +1,7 @@
 import org.gradle.kotlin.dsl.implementation
-
+import java.io.File
+import java.net.URL
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -42,6 +44,70 @@ android {
         compose = true
     }
 }
+
+fun getLocalProperty(key: String): String {
+    val localProperties = Properties()
+    val localPropertiesFile = project.rootProject.file("local.properties")
+
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { input ->
+            localProperties.load(input)
+        }
+    } else {
+        error("Error: El archivo 'local.properties' no se encuentra en la raíz del proyecto. Asegúrese de crearlo.")
+    }
+    return localProperties.getProperty(key) ?: error("Error: La clave '$key' no se encuentra en 'local.properties'. Por favor, añádala con su valor.")
+}
+
+val localeMapping = mapOf(
+    "en-US" to "values",
+    "es-ES" to "values-es",
+    "es-BO" to "values-es-rBO"
+)
+tasks.register("downloadLocoStrings") {
+    group = "localization"
+    description = "Downloads strings.xml files from Localise.biz via API"
+
+    val locoApiKey = getLocalProperty("LOCO_API_KEY")
+
+    val resDir = file("src/main/res")
+
+    doLast {
+        localeMapping.forEach { (apiCode, resFolder) ->
+            downloadFile(
+                apiKey = locoApiKey,
+                apiCode = apiCode,
+                resFolder = resFolder,
+                resDir = resDir
+            )
+        }
+    }
+}
+fun downloadFile(apiKey: String, apiCode: String, resFolder: String, resDir: File) {
+    println("-> Descargando [$apiCode] en $resFolder")
+
+    val outputFile = file("$resDir/$resFolder/strings.xml")
+
+    outputFile.parentFile.mkdirs()
+
+    val exportUrl = "https://localise.biz/api/export/locale/$apiCode.xml?key=$apiKey&format=android"
+
+    try {
+        URL(exportUrl).openStream().use { input ->
+            outputFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        println("✅ Descarga de $apiCode exitosa en $resFolder/strings.xml.")
+    } catch (e: Exception) {
+        println("❌ ERROR al descargar $apiCode. Verifique que la clave '$apiCode' tenga contenido en Localise.biz y que la API Key sea correcta: ${e.message}")
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("downloadLocoStrings")
+}
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
