@@ -1,17 +1,27 @@
 package com.example.openhands.features.signcamera.presentation
 
 import android.Manifest
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.Matrix
+import android.graphics.Rect
+import android.graphics.YuvImage
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,6 +37,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import org.koin.androidx.compose.koinViewModel
+import java.io.ByteArrayOutputStream
+import java.util.concurrent.Executors
+import androidx.compose.ui.unit.sp // Import para el tamaño de fuente
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -41,11 +54,19 @@ fun SignCameraScreen(
         }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearResources()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         if (cameraPermissionState.status.isGranted) {
-            CameraPreview(modifier = Modifier.fillMaxSize())
+            CameraPreview(
+                modifier = Modifier.fillMaxSize(),
+                viewModel = viewModel
+            )
         } else {
-            // Muestra un mensaje si los permisos son denegados
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -61,9 +82,12 @@ fun SignCameraScreen(
             }
         }
 
-        // UI superpuesta
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar transparente
+        // --- UI superpuesta SIMPLIFICADA (NUEVA ESTRUCTURA) ---
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween // Arriba y abajo
+        ) {
+            // 1. TOP BAR (Volver)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -74,7 +98,7 @@ fun SignCameraScreen(
                     onClick = onNavigateBack,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(Color(0xFF152C58))
+                        .background(Color.Black.copy(alpha = 0.5f)) // Fondo semi-transparente
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -84,47 +108,37 @@ fun SignCameraScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(0.1f))
-
-            // Recuadro de detección
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .width(180.dp)
-                    .height(240.dp)
-                    .border(width = 4.dp, color = Color.Yellow)
-            )
-
+            // Espacio central ocupado por la cámara
+            // La UI original no tenía el recuadro, pero podemos dejar un Spacer para mejor control
             Spacer(modifier = Modifier.weight(1f))
 
-            // Texto de instrucción
-            Text(
-                text = "Centre las manos dentro del recuadro",
-                color = Color.White,
+            // 2. CAJA DE TEXTO INFERIOR (SIMPLE)
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .padding(8.dp),
-                textAlign = TextAlign.Center
-            )
-
-            // Caja de texto inferior
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .background(Color.Black),
-                contentAlignment = Alignment.Center
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(24.dp)
             ) {
-                Text(
-                    text = viewModel.detectedText,
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
-                        .background(Color.White, shape = RoundedCornerShape(16.dp))
-                        .padding(16.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween // Espacio entre texto y botón
+                ) {
+                    Text(
+                        text = viewModel.detectedText,
+                        color = Color.White, // Texto blanco sobre fondo oscuro
+                        fontSize = 32.sp,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.weight(1f) // Ocupa la mayor parte del espacio
+                    )
+                    IconButton(onClick = viewModel::clearText) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Borrar Texto",
+                            tint = Color.Gray
+                        )
+                    }
+                }
             }
         }
     }
@@ -132,18 +146,85 @@ fun SignCameraScreen(
 
 
 @Composable
-fun CameraPreview(modifier: Modifier = Modifier) {
+fun CameraPreview(modifier: Modifier = Modifier, viewModel: SignCameraViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraController = remember { LifecycleCameraController(context) }
+
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
+
+    val analyzer = remember {
+        ImageAnalysis.Analyzer { imageProxy ->
+            val bitmap = imageProxy.toBitmapRobust()
+            bitmap?.let {
+                viewModel.sendFrame(it)
+            }
+            imageProxy.close()
+        }
+    }
+
+    LaunchedEffect(cameraController) {
+        cameraController.unbind()
+        cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+
+        imageAnalysis.setAnalyzer(analysisExecutor, analyzer)
+
+        cameraController.bindToLifecycle(lifecycleOwner)
+        cameraController.setImageAnalysisAnalyzer(analysisExecutor, analyzer)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraController.clearImageAnalysisAnalyzer()
+            analysisExecutor.shutdown()
+        }
+    }
 
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
             PreviewView(ctx).apply {
                 controller = cameraController
-                cameraController.bindToLifecycle(lifecycleOwner)
             }
         }
     )
+}
+
+// FUNCIONES DE UTILIDAD (Conversión de imagen)
+fun ImageProxy.toBitmapRobust(): Bitmap? {
+    if (format != ImageFormat.YUV_420_888) return null
+
+    val yBuffer = planes[0].buffer
+    val uBuffer = planes[1].buffer
+    val vBuffer = planes[2].buffer
+
+    val ySize = yBuffer.remaining()
+    val uSize = uBuffer.remaining()
+    val vSize = vBuffer.remaining()
+
+    val nv21 = ByteArray(ySize + uSize + vSize)
+
+    yBuffer.get(nv21, 0, ySize)
+    vBuffer.get(nv21, ySize, vSize)
+    uBuffer.get(nv21, ySize + vSize, uSize)
+
+    val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
+    val out = ByteArrayOutputStream()
+    yuvImage.compressToJpeg(Rect(0, 0, this.width, this.height), 80, out)
+    val imageBytes = out.toByteArray()
+
+    return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)?.let {
+        rotateBitmap(it, imageInfo.rotationDegrees)
+    }
+}
+
+fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
+    if (rotationDegrees == 0) return bitmap
+    val matrix = Matrix()
+    matrix.postRotate(rotationDegrees.toFloat())
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 }

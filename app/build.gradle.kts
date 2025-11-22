@@ -82,7 +82,16 @@ dependencies {
     testImplementation(libs.room.testing)
 
 
+    // -----------------------------------------------------
+    // MODIFICACIONES CLAVE PARA MOBILE/SERVER
+    // -----------------------------------------------------
+
+    // 1. Socket.IO para la comunicación cliente-servidor
+    implementation(libs.socketio)
+
+    // 2. CameraX (se mantiene tu bundle, asumiendo que incluye las deps correctas)
     implementation(libs.bundles.camerax)
 
+    // 3. Accompanist Permissions (Se mantiene)
     implementation(libs.google.accompanist.permissions)
 }
