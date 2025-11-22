@@ -1,5 +1,5 @@
-package com.example.openhands.features.signcamera.presentation
 
+package com.example.openhands.features.signcamera.presentation
 import android.Manifest
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -40,7 +40,9 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import androidx.compose.ui.unit.sp // Import para el tamaño de fuente
-
+// --- CONFIGURACIÓN DE OPTIMIZACIÓN ---
+const val JPEG_QUALITY = 60 // <--- OPTIMIZACIÓN: Reducción de calidad de imagen para acelerar el envío
+// ------------------------------------
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SignCameraScreen(
@@ -82,12 +84,12 @@ fun SignCameraScreen(
             }
         }
 
-        // --- UI superpuesta SIMPLIFICADA (NUEVA ESTRUCTURA) ---
+        // --- UI superpuesta SIMPLIFICADA ---
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween // Arriba y abajo
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // 1. TOP BAR (Volver)
+            // 1. TOP BAR
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -98,7 +100,7 @@ fun SignCameraScreen(
                     onClick = onNavigateBack,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.5f)) // Fondo semi-transparente
+                        .background(Color.Black.copy(alpha = 0.5f))
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -108,8 +110,6 @@ fun SignCameraScreen(
                 }
             }
 
-            // Espacio central ocupado por la cámara
-            // La UI original no tenía el recuadro, pero podemos dejar un Spacer para mejor control
             Spacer(modifier = Modifier.weight(1f))
 
             // 2. CAJA DE TEXTO INFERIOR (SIMPLE)
@@ -122,14 +122,14 @@ fun SignCameraScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween // Espacio entre texto y botón
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         text = viewModel.detectedText,
-                        color = Color.White, // Texto blanco sobre fondo oscuro
+                        color = Color.White,
                         fontSize = 32.sp,
                         textAlign = TextAlign.Start,
-                        modifier = Modifier.weight(1f) // Ocupa la mayor parte del espacio
+                        modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = viewModel::clearText) {
                         Icon(
@@ -143,14 +143,11 @@ fun SignCameraScreen(
         }
     }
 }
-
-
 @Composable
 fun CameraPreview(modifier: Modifier = Modifier, viewModel: SignCameraViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraController = remember { LifecycleCameraController(context) }
-
     val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
 
     val analyzer = remember {
@@ -165,7 +162,8 @@ fun CameraPreview(modifier: Modifier = Modifier, viewModel: SignCameraViewModel)
 
     LaunchedEffect(cameraController) {
         cameraController.unbind()
-        cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+        // --- CAMBIO CLAVE: CÁMARA TRASERA PARA MEJOR CALIDAD DE IMAGEN ---
+        cameraController.cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
         val imageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -193,7 +191,6 @@ fun CameraPreview(modifier: Modifier = Modifier, viewModel: SignCameraViewModel)
         }
     )
 }
-
 // FUNCIONES DE UTILIDAD (Conversión de imagen)
 fun ImageProxy.toBitmapRobust(): Bitmap? {
     if (format != ImageFormat.YUV_420_888) return null
@@ -214,14 +211,14 @@ fun ImageProxy.toBitmapRobust(): Bitmap? {
 
     val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
     val out = ByteArrayOutputStream()
-    yuvImage.compressToJpeg(Rect(0, 0, this.width, this.height), 80, out)
+// --- OPTIMIZACIÓN: Calidad de compresión reducida ---
+    yuvImage.compressToJpeg(Rect(0, 0, this.width, this.height), JPEG_QUALITY, out)
     val imageBytes = out.toByteArray()
 
     return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)?.let {
         rotateBitmap(it, imageInfo.rotationDegrees)
     }
 }
-
 fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
     if (rotationDegrees == 0) return bitmap
     val matrix = Matrix()
