@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ImageSearch
+import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -86,36 +87,35 @@ fun TextSignScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(1f)
-                        .height(220.dp)
-                        .background(Color.White, shape = RoundedCornerShape(20.dp)),
+                        .height(400.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFFF5F5F5)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    if (viewModel.imageResId == null) {
-                        // Estado inicial cuando no hay imagen
+
+                    val currentResId = viewModel.mediaResId
+
+                    if (currentResId == null) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(16.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.ImageSearch,
-                                contentDescription = "Placeholder de imagen",
+                                imageVector = Icons.Filled.PlayCircleOutline,
+                                contentDescription = "Placeholder de video",
                                 modifier = Modifier.size(80.dp),
                                 tint = Color.LightGray
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "La seña aparecerá aquí",
+                                text = "El video de la seña aparecerá aquí",
                                 color = Color.Gray,
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyLarge
+                                textAlign = TextAlign.Center
                             )
                         }
                     } else {
-                        Image(
-                            painter = painterResource(id = viewModel.imageResId!!),
-                            contentDescription = "Imagen de la seña",
-                            modifier = Modifier.fillMaxSize(0.99f)
+                        VideoPlayer(
+                            modifier = Modifier.fillMaxSize(),
+                            videoResId = currentResId
                         )
                     }
                 }

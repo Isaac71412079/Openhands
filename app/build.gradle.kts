@@ -150,4 +150,6 @@ dependencies {
     implementation(libs.google.accompanist.permissions)
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
     implementation("androidx.compose.runtime:runtime")
+    implementation("androidx.media3:media3-exoplayer:1.4.0")
+    implementation("androidx.media3:media3-ui:1.4.0")
 }

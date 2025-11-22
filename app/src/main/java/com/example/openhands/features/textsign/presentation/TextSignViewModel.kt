@@ -17,22 +17,26 @@ class TextSignViewModel(
 
     var inputText by mutableStateOf("")
         private set
-
+/*
     var imageResId by mutableStateOf<Int?>(null)
+        private set
+*/
+    var mediaResId by mutableStateOf<Int?>(null)
         private set
 
     fun onTextChanged(newText: String) {
         inputText = newText
         if (newText.isEmpty()) {
-            imageResId = null
+            mediaResId = null
         }
     }
 
     fun onTranslateClicked() {
         val textToTranslate = inputText.trim()
         if (textToTranslate.isBlank()) return
-        imageResId = when (textToTranslate.lowercase()) {
-            "a" -> R.drawable.a
+        mediaResId = when (textToTranslate.lowercase()) {
+            //"a" -> R.drawable.a
+            "a" -> R.raw.letra_a
             "b" -> R.drawable.b
             "c" -> R.drawable.c
             "d" -> R.drawable.d
