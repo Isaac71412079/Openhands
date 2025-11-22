@@ -1,16 +1,21 @@
 package com.example.openhands.features.signcamera.presentation
 
 import android.Manifest
+import android.net.Uri
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -23,19 +28,28 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
+import com.example.openhands.navigation.Screen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import org.koin.androidx.compose.koinViewModel
+import java.io.File
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SignCameraScreen(
+    rootNavController: NavController,
     viewModel: SignCameraViewModel = koinViewModel(),
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val cameraController = remember { LifecycleCameraController(context) }
+
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(Unit) {
         if (!cameraPermissionState.status.isGranted) {
             cameraPermissionState.launchPermissionRequest()
         }
@@ -43,9 +57,11 @@ fun SignCameraScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (cameraPermissionState.status.isGranted) {
-            CameraPreview(modifier = Modifier.fillMaxSize())
+            CameraPreview(
+                modifier = Modifier.fillMaxSize(),
+                cameraController = cameraController
+            )
         } else {
-            // Muestra un mensaje si los permisos son denegados
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -61,9 +77,8 @@ fun SignCameraScreen(
             }
         }
 
-        // UI superpuesta
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar transparente
+            // Barra superior
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,35 +122,56 @@ fun SignCameraScreen(
                     .padding(8.dp),
                 textAlign = TextAlign.Center
             )
+        }
 
-            // Caja de texto inferior
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .background(Color.Black),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = viewModel.detectedText,
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp)
-                        .background(Color.White, shape = RoundedCornerShape(16.dp))
-                        .padding(16.dp)
+        // Botón de captura
+        IconButton(
+            onClick = {
+                val photoFile = File(context.cacheDir, "captured_image.jpg")
+                val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+                cameraController.takePicture(
+                    outputOptions,
+                    ContextCompat.getMainExecutor(context),
+                    object : ImageCapture.OnImageSavedCallback {
+                        override fun onError(exc: ImageCaptureException) {
+                            exc.printStackTrace()
+                        }
+
+                        override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                            val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                            println("URI capturada: $savedUri") // para depuración
+                            viewModel.onImageCaptured(savedUri.toString())
+
+                            // Navegar a la pantalla de CapturedImage sin pasar la URI
+                            rootNavController.navigate(Screen.CapturedImage.route)
+                        }
+                    }
                 )
-            }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+        ) {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Tomar foto",
+                tint = Color.Black,
+                modifier = Modifier.size(40.dp)
+            )
         }
     }
 }
 
-
 @Composable
-fun CameraPreview(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    cameraController: LifecycleCameraController
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraController = remember { LifecycleCameraController(context) }
 
     AndroidView(
         modifier = modifier,

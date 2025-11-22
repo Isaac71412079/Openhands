@@ -1,17 +1,14 @@
-import org.gradle.kotlin.dsl.implementation
-
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
+    id("com.google.devtools.ksp") version "2.0.21-1.0.25"
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.gms.google.services)
-    id("com.google.devtools.ksp") // ← usa el plugin aquí directamente
 }
 
 android {
     namespace = "com.example.openhands"
     compileSdk = 35
-    // usa 34 o el más reciente estable (36 aún no es oficial)
 
     defaultConfig {
         applicationId = "com.example.openhands"
@@ -47,6 +44,22 @@ android {
 }
 
 dependencies {
+
+    // **Firebase BOM**
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+
+    // **Firebase KTX oficiales**
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
+    // Coroutines Firebase
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // ---- RESTO DE TUS DEPENDENCIAS ----
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -55,22 +68,22 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.firebase.database)
-    implementation(libs.firebase.messaging)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.material3)
 
-    // Room + KSP
+    // Room
     implementation(libs.bundles.local)
     ksp(libs.room.compiler)
     testImplementation(libs.room.testing)
 
-    // Otros
+    // Networking + DI
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.navigation)
     implementation(libs.koin.androidx.compose)
+
+    // Otros
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
     implementation(libs.datastore)
@@ -78,6 +91,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
     implementation(libs.bundles.camerax)
     implementation(libs.google.accompanist.permissions)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

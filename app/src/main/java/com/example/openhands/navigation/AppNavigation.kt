@@ -8,6 +8,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.welcome.presentation.SplashAndWelcomeScreen
 import com.example.openhands.features.auth.presentation.RegisterScreen
 import com.example.openhands.features.login.presentation.LoginScreen
+import com.example.openhands.features.signcamera.presentation.CapturedImageScreen
+import com.example.openhands.features.signcamera.presentation.SignCameraViewModel
+import org.koin.androidx.compose.koinViewModel
+import android.net.Uri
+
 
 @Composable
 fun AppNavigation() {
@@ -15,10 +20,10 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.SplashAndWelcome.route // 👈 empieza desde tu pantalla de bienvenida
+        startDestination = Screen.SplashAndWelcome.route
     ) {
 
-        // 🟦 Pantalla de bienvenida / splash
+        // Pantalla de bienvenida
         composable(Screen.SplashAndWelcome.route) {
             SplashAndWelcomeScreen(
                 onLoginClicked = { navController.navigate(Screen.Login.route) },
@@ -26,16 +31,15 @@ fun AppNavigation() {
             )
         }
 
-        // 🟨 Pantalla de login
+        // Pantalla de login
         composable(Screen.Login.route) {
             LoginScreen()
         }
 
-        // 🟩 Pantalla de registro
+        // Pantalla de registro
         composable(Screen.Register.route) {
             RegisterScreen(
                 onRegisterSuccess = {
-                    // Navegamos al login luego del registro exitoso
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.SplashAndWelcome.route) { inclusive = false }
                     }
@@ -43,9 +47,18 @@ fun AppNavigation() {
             )
         }
 
-        // (Opcional) si luego quieres ir al Home
-        // composable(Screen.Home.route) {
-        //     HomeScreen()
-        // }
+        // Pantalla de imagen capturada
+        composable(Screen.CapturedImage.route) {
+            val viewModel = koinViewModel<SignCameraViewModel>()
+            val imageUri = viewModel.capturedImageUri
+
+            CapturedImageScreen(
+                imageUri = imageUri,
+                onRetakePhoto = { navController.popBackStack() },
+                onConfirm = { navController.navigate(Screen.Login.route) }
+            )
+        }
+
+
     }
 }

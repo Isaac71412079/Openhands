@@ -2,9 +2,10 @@ pluginManagement {
     repositories {
         google()
         mavenCentral()
-        gradlePluginPortal() // <-- Add this line here
+        gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -13,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Openhands"
+rootProject.name = "OpenHands"
 include(":app")

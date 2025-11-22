@@ -17,7 +17,6 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     viewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -33,6 +32,7 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
             Text(
                 text = "Crear Cuenta",
                 style = MaterialTheme.typography.headlineMedium,
@@ -40,14 +40,7 @@ fun RegisterScreen(
                 color = Color(0xFF152C58)
             )
 
-            OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
-                label = { Text("Nombre completo") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
+            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -57,6 +50,7 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -66,6 +60,7 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Confirm Password
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
@@ -75,9 +70,14 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Botón de registro
             Button(
                 onClick = {
-                    viewModel.registerUser(nombre, email, password, confirmPassword)
+                    viewModel.registerUser(
+                        email,
+                        password,
+                        confirmPassword
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -87,9 +87,7 @@ fun RegisterScreen(
                 Text("Registrarse")
             }
 
-            if (uiState.isLoading) {
-                CircularProgressIndicator()
-            }
+            if (uiState.isLoading) CircularProgressIndicator()
 
             if (uiState.success) {
                 LaunchedEffect(Unit) {

@@ -7,4 +7,7 @@ sealed class Screen(val route: String) {
     object Home: Screen("home_screen")
     object TextSign : Screen("text_sign_screen")
     object SignCamera : Screen("sign_camera_screen")
+    object CapturedImage : Screen("captured_image")
 }
+
+data class ScreenRoute(val route: String)
