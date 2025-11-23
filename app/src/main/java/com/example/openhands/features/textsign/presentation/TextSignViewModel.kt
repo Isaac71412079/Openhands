@@ -37,33 +37,34 @@ class TextSignViewModel(
         mediaResId = when (textToTranslate.lowercase()) {
             //"a" -> R.drawable.a
             "a" -> R.raw.letra_a
-            "b" -> R.drawable.b
-            "c" -> R.drawable.c
-            "d" -> R.drawable.d
-            "e" -> R.drawable.e
-            "f" -> R.drawable.f
-            "g" -> R.drawable.g
-            "h" -> R.drawable.h
-            "i" -> R.drawable.i
-            "j" -> R.drawable.j
-            "k" -> R.drawable.k
-            "l" -> R.drawable.l
-            "ll" -> R.drawable.ll
-            "m" -> R.drawable.m
-            "n" -> R.drawable.n
-            "ñ" -> R.drawable.ne
-            "o" -> R.drawable.o
-            "p" -> R.drawable.p
-            "q" -> R.drawable.q
-            "r" -> R.drawable.r
-            "s" -> R.drawable.s
-            "t" -> R.drawable.t
-            "u" -> R.drawable.u
-            "v" -> R.drawable.v
-            "w" -> R.drawable.w
-            "x" -> R.drawable.x
-            "y" -> R.drawable.y
-            "z" -> R.drawable.z
+            "b" -> R.raw.letra_b
+            "c" -> R.raw.letra_c
+            "d" -> R.raw.letra_d
+            "e" -> R.raw.letra_e
+            "f" -> R.raw.letra_f
+            "g" -> R.raw.letra_g
+            "h" -> R.raw.letra_h
+            "i" -> R.raw.letra_i
+            "j" -> R.raw.letra_j
+            "k" -> R.raw.letra_k
+            "l" -> R.raw.letra_l
+            "ll" -> R.raw.letra_ll
+            "m" -> R.raw.letra_m
+            "n" -> R.raw.letra_n
+            "ñ" -> R.raw.letra_ne
+            "o" -> R.raw.letra_o
+            "p" -> R.raw.letra_p
+            "q" -> R.raw.letra_q
+            "r" -> R.raw.letra_r
+            "rr" -> R.raw.letra_rr
+            "s" -> R.raw.letra_s
+            "t" -> R.raw.letra_t
+            "u" -> R.raw.letra_u
+            "v" -> R.raw.letra_v
+            "w" -> R.raw.letra_w
+            "x" -> R.raw.letra_x
+            "y" -> R.raw.letra_y
+            "z" -> R.raw.letra_z
             else -> null // Si no es una letra del alfabeto, no mostramos imagen
         }
         viewModelScope.launch {
