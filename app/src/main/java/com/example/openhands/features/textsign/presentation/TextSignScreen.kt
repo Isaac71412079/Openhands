@@ -95,7 +95,9 @@ fun TextSignScreen(
 
                     val currentResId = viewModel.mediaResId
 
-                    if (currentResId == null) {
+                    val currentVideoQueue = viewModel.videoQueue
+
+                    if (currentVideoQueue.isEmpty()) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
@@ -115,7 +117,7 @@ fun TextSignScreen(
                     } else {
                         VideoPlayer(
                             modifier = Modifier.fillMaxSize(),
-                            videoResId = currentResId
+                            videoQueue = currentVideoQueue // Pasa la lista
                         )
                     }
                 }
