@@ -50,7 +50,6 @@ class TextSignViewModel(
         val exceptions = mapOf(
             "hola" to R.raw.hola,
             "mundo" to R.raw.mundo,
-            "buenos" to R.raw.buenos,
         )
 
         if (phraseExceptions.containsKey(textToTranslate)) {
