@@ -26,20 +26,27 @@ import org.koin.dsl.module
 
 val appModule = module {
 
+    // --- Login Feature ---
     single { LoginDataStore(androidContext()) }
     single<ILoginRepository> { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
     viewModel { LoginViewModel(get(), get()) }
 
+    // --- Home Feature ---
     single<IHomeRepository> { HomeRepository() }
     factory { HomeUseCase(repository = get()) }
     viewModel { HomeViewModel(homeUseCase = get()) }
 
+    // --- TextSign Feature ---
     single<ITextSignRepository> { TextSignRepository() }
     factory { TranslateTextUseCase(repository = get()) }
     viewModel { TextSignViewModel(get(), get()) }
 
+    // --- SignCamera Feature (Actualizado) ---
+    // Repositorio
     single<ISignCameraRepository> { SignCameraRepository() }
-    viewModel { SignCameraViewModel() }
+
+    // ViewModel - Ahora inyecta el repositorio (get())
+    viewModel { SignCameraViewModel(repository = get()) }
 
 }
