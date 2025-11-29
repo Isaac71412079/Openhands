@@ -5,19 +5,18 @@
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.CLEAR_TEXT_TRAFFIC" tools:targetApi="28"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CLEAR_TEXT_TRAFFIC" tools:targetApi="28" />
 
     <application
         android:name=".App"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/openhandslogo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/openhandslogo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Openhands">
         <activity

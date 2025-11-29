@@ -25,8 +25,8 @@ datastore = "1.1.1"
 material3 = "1.4.0"
 camerax = "1.2.3"
 accompanistPermissions = "0.35.1-alpha"
+runtime = "1.9.4"
 socketio = "2.1.0" # <--- NUEVA VERSIÓN DE SOCKETIO
-
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -76,6 +76,7 @@ room-paging = { group="androidx.room", name="room-paging", version.ref = "room"}
 #datastore
 datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

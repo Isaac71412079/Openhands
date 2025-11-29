@@ -17,12 +17,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.home.presentation.HistoryScreen
 import com.example.openhands.features.home.presentation.HomeScreen
 import com.example.openhands.features.login.presentation.LoginScreen
-// CAMBIO: Se añade el import para la pantalla de la cámara
 import com.example.openhands.features.signcamera.presentation.SignCameraScreen
 import com.example.openhands.features.textsign.presentation.TextSignScreen
 import com.example.openhands.features.welcome.presentation.SplashAndWelcomeScreen
 import com.example.openhands.navigation.Screen
 import com.example.openhands.ui.theme.OpenhandsTheme
+import com.example.openhands.features.textsign.presentation.WebViewScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +68,6 @@ class MainActivity : ComponentActivity() {
                                 rootNavController.navigate(Screen.SignCamera.route)
                             },
                             onHistoryClick = {
-                                // Esto ahora funcionará porque Screen.History existe
                                 rootNavController.navigate(Screen.History.route)
                             }
                         )
@@ -86,12 +85,22 @@ class MainActivity : ComponentActivity() {
                         TextSignScreen(
                             onNavigateBack = {
                                 rootNavController.navigateUp()
+                            },
+                            onNavigateToMoreLanguages = {
+                                rootNavController.navigate(Screen.MoreLanguagesWebView.route)
                             }
                         )
                     }
 
-                    // CAMBIO: Se reemplaza la ruta y el contenido de 'ImageAction'
-                    // por la nueva pantalla de la cámara 'SignCamera'.
+                    composable(Screen.MoreLanguagesWebView.route) {
+                        WebViewScreen(
+                            url = "https://sign.mt/",
+                            onNavigateBack = {
+                                rootNavController.navigateUp()
+                            }
+                        )
+                    }
+
                     composable(Screen.SignCamera.route) {
                         SignCameraScreen(
                             onNavigateBack = {

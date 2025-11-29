@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Loco xml export: Android strings
+ Project: openhands
+ Locale: es-BO, Spanish (Bolivia)
+ Exported by: Isaac Joel Rivero Peñarrieta
+ Exported at: Sat, 29 Nov 2025 08:09:00 -0400
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Openhands</string>
+</resources>

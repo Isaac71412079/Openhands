@@ -14,4 +14,5 @@ sealed class Screen(val route: String) {
     // --- CORRECCIÓN ---
     // El object History debe estar DENTRO de la clase Screen
     object History: Screen("history_screen")
+    object MoreLanguagesWebView : Screen("more_languages_webview")
 }
