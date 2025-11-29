@@ -20,14 +20,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+// IMPORTS AGREGADOS
+import org.koin.androidx.compose.koinViewModel
+import com.example.openhands.features.clock.presentation.ClockViewModel
+import com.example.openhands.features.clock.presentation.RealTimeClock
 import com.example.openhands.R
 
 @Composable
 fun HomeScreen(
-
     onTextActionClick: () -> Unit,
     onImageActionClick: () -> Unit,
-    onHistoryClick: () -> Unit
+    onHistoryClick: () -> Unit,
+    // INYECCIÓN DE DEPENDENCIA DEL RELOJ
+    clockViewModel: ClockViewModel = koinViewModel()
 ) {
     Box(
         modifier = Modifier
@@ -35,6 +40,19 @@ fun HomeScreen(
             .background(Color(0xFF152C58))
             .padding(16.dp)
     ) {
+        // --- NUEVO: RELOJ SEGURO ---
+        // Lo alineamos arriba a la izquierda para que no estorbe
+        // IMPORTANTE: Asegúrate de que en 'RealTimeClock' el texto sea Color.White
+        // o pasa un modifier que lo cambie si tu componente lo soporta.
+        Box(modifier = Modifier.align(Alignment.TopStart)) {
+            RealTimeClock(
+                viewModel = clockViewModel,
+                // Puedes ajustar el modifier si necesitas padding extra
+                modifier = Modifier.padding(top = 8.dp, start = 8.dp)
+            )
+        }
+
+        // Botón de Historial (Existente) - Arriba a la derecha
         IconButton(
             onClick = onHistoryClick,
             modifier = Modifier.align(Alignment.TopEnd)
@@ -47,12 +65,13 @@ fun HomeScreen(
             )
         }
 
+        // Contenido Central (Existente)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Centra todo verticalmente
+            verticalArrangement = Arrangement.Center
         ) {
             Image(
                 painter = painterResource(id = R.drawable.openhands),
@@ -87,8 +106,6 @@ fun HomeScreen(
         }
     }
 }
-
-
 
 @Composable
 fun ActionButton(
