@@ -44,7 +44,8 @@ class TextSignViewModel(
         val newVideoQueue = mutableListOf<Int>()
 
         val phraseExceptions = mapOf(
-            "buenos dias" to R.raw.buenosdias, // Asegúrate de tener buenos_dias.mp4
+            "buenos dias" to R.raw.buenosdias,
+
         )
 
         val exceptions = mapOf(

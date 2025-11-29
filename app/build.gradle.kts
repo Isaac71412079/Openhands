@@ -152,4 +152,6 @@ dependencies {
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.media3:media3-exoplayer:1.4.0")
     implementation("androidx.media3:media3-ui:1.4.0")
+
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
 }
