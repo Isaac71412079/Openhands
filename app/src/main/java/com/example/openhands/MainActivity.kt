@@ -24,6 +24,12 @@ import com.example.openhands.navigation.Screen
 import com.example.openhands.ui.theme.OpenhandsTheme
 import com.example.openhands.features.textsign.presentation.WebViewScreen
 
+// 🔥 Firebase
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import android.util.Log
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +37,9 @@ class MainActivity : ComponentActivity() {
             OpenhandsTheme {
                 val rootNavController = rememberNavController()
                 val context = LocalContext.current
+
+                // 👇 PRUEBA DE FIREBASE
+                testFirebaseConfig()
 
                 NavHost(
                     navController = rootNavController,
@@ -112,7 +121,21 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun testFirebaseConfig() {
+        try {
+            val auth = Firebase.auth
+            val db = Firebase.firestore
+            Log.d("FirebaseTest", "Firebase Auth OK: ${auth != null}")
+            Log.d("FirebaseTest", "Firebase Firestore OK: ${db != null}")
+
+            Toast.makeText(this, "Firebase Config OK", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Log.e("FirebaseTest", "Error: ${e.message}")
+            Toast.makeText(this, "Firebase ERROR: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 }
+
 
 @Composable
 fun HelloScreen(name: String, modifier: Modifier = Modifier) {
