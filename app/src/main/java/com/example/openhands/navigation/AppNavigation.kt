@@ -12,7 +12,7 @@ import com.example.openhands.features.signcamera.presentation.CapturedImageScree
 import com.example.openhands.features.signcamera.presentation.SignCameraViewModel
 import org.koin.androidx.compose.koinViewModel
 import android.net.Uri
-
+import com.example.openhands.features.timeprovider.presentation.TimeScreen
 
 @Composable
 fun AppNavigation() {
@@ -20,7 +20,7 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.SplashAndWelcome.route
+        startDestination = Screen.Time.route
     ) {
 
         // Pantalla de bienvenida
@@ -34,6 +34,13 @@ fun AppNavigation() {
         // Pantalla de login
         composable(Screen.Login.route) {
             LoginScreen()
+        }
+
+        //Pantalla del time provider
+        composable(Screen.Time.route) {
+            TimeScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         // Pantalla de registro

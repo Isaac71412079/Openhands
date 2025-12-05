@@ -40,15 +40,15 @@ android {
 
     buildFeatures {
         compose = true
+        viewBinding = true   // ← CORRECCIÓN
     }
 }
 
 dependencies {
-
-    // **Firebase BOM**
+    // Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
-    // **Firebase KTX oficiales**
+    // Firebase KTX
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
@@ -58,8 +58,7 @@ dependencies {
     // Coroutines Firebase
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
-    // ---- RESTO DE TUS DEPENDENCIAS ----
-
+    // AndroidX / Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -76,7 +75,7 @@ dependencies {
     ksp(libs.room.compiler)
     testImplementation(libs.room.testing)
 
-    // Networking + DI
+    // Retrofit + Koin
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.koin.android)
@@ -93,6 +92,7 @@ dependencies {
     implementation(libs.google.accompanist.permissions)
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
