@@ -4,15 +4,22 @@ import com.example.openhands.features.login.data.LoginDataStore
 import com.example.openhands.features.login.domain.model.LoginResult
 import com.example.openhands.features.login.domain.repository.ILoginRepository
 import kotlinx.coroutines.delay
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.tasks.await
 
 class LoginRepository(
-    private val loginDataStore: LoginDataStore
+    private val loginDataStore: LoginDataStore,
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : ILoginRepository {
+
     override suspend fun login(email: String, pass: String): LoginResult {
-        delay(1000)
-        return if (email == "openhands@gmail.com" && pass == "123") {
+        return try {
+            // Intentamos iniciar sesión en Firebase
+            firebaseAuth.signInWithEmailAndPassword(email, pass).await()
+            saveSession(email)
             LoginResult.Success
-        } else {
+        } catch (e: Exception) {
+            e.printStackTrace()
             LoginResult.Failure.InvalidCredentials
         }
     }

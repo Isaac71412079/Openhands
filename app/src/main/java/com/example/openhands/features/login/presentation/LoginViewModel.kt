@@ -35,7 +35,7 @@ class LoginViewModel(
     fun onLoginClicked() {
         viewModelScope.launch {
             uiState = LoginUIState.Loading
-            val result = loginUseCase.invoke(email, password)
+            val result = loginUseCase(email, password)
             uiState = when (result) {
                 is LoginResult.Success -> LoginUIState.Success
                 is LoginResult.Failure.EmptyFields -> LoginUIState.Error("Correo y contraseña no pueden estar vacíos.")

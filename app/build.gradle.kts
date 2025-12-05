@@ -2,6 +2,7 @@ import org.gradle.kotlin.dsl.implementation
 import java.io.File
 import java.net.URL
 import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -110,60 +111,61 @@ tasks.named("preBuild").configure {
 
 
 dependencies {
+    // --- Firebase (Correct Setup) ---
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-common-ktx") // The key fix
+
+    // --- AndroidX & Compose ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.firebase.database)
-    implementation(libs.firebase.messaging)
-    implementation(libs.androidx.room.common.jvm)
-    implementation(libs.material3)
-    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.material3) // Single Material3 dependency
+    implementation(libs.androidx.navigation.compose)
+    implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
+    implementation(libs.androidx.runtime) // Single runtime dependency
+
+    // --- Dependency Injection (Koin) ---
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.navigation)
+    implementation(libs.koin.androidx.compose)
+
+    // --- Networking & Data ---
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.datastore)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network)
+
+    // --- Room (Local Database) ---
+    implementation(libs.bundles.local)
+    ksp(libs.room.compiler)
+    // annotationProcessor(libs.room.compiler) // You can remove this; KSP is the modern replacement.
+
+    // --- Media & Camera ---
+    implementation(libs.bundles.camerax)
+    implementation("androidx.media3:media3-exoplayer:1.4.0")
+    implementation("androidx.media3:media3-ui:1.4.0")
+
+    // --- Other Utilities ---
+    implementation(libs.socketio)
+    implementation(libs.google.accompanist.permissions)
+
+    // --- Testing ---
     testImplementation(libs.junit)
+    testImplementation(libs.room.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation (libs.koin.android)
-    implementation (libs.koin.androidx.navigation)
-    implementation (libs.koin.androidx.compose)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.datastore)
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
-    //local bundle room
-    implementation(libs.bundles.local)
-    annotationProcessor(libs.room.compiler)
-    ksp(libs.room.compiler)
-    testImplementation(libs.room.testing)
-
-
-    // -----------------------------------------------------
-    // MODIFICACIONES CLAVE PARA MOBILE/SERVER
-    // -----------------------------------------------------
-
-    // 1. Socket.IO para la comunicación cliente-servidor
-    implementation(libs.socketio)
-
-    // 2. CameraX (se mantiene tu bundle, asumiendo que incluye las deps correctas)
-    implementation(libs.bundles.camerax)
-
-    // 3. Accompanist Permissions (Se mantiene)
-    implementation(libs.google.accompanist.permissions)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
-    implementation("androidx.compose.runtime:runtime")
-    implementation("androidx.media3:media3-exoplayer:1.4.0")
-    implementation("androidx.media3:media3-ui:1.4.0")
-
-    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
 }

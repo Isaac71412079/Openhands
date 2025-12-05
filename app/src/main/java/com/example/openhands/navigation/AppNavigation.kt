@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.login.presentation.LoginScreen
+import org.koin.androidx.compose.koinViewModel
+import android.net.Uri
 
 @Composable
 fun AppNavigation() {
