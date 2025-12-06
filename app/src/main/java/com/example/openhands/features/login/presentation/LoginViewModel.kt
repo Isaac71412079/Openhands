@@ -1,17 +1,15 @@
 package com.example.openhands.features.login.presentation
 
-import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.openhands.features.login.domain.model.LoginResult
 import com.example.openhands.features.login.domain.usecase.LoginUseCase
 import kotlinx.coroutines.launch
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 
-// 1. Estado de UI más detallado
+// 1. Estado de UI más detallado, similar a Register
 data class LoginUIState(
     val isLoading: Boolean = false,
     val success: Boolean = false,
@@ -34,50 +32,42 @@ class LoginViewModel(
 
     fun onEmailChange(newEmail: String) {
         email = newEmail
+        // Limpia el error al empezar a escribir de nuevo
+        if (uiState.emailError != null || uiState.genericError != null) {
+            uiState = uiState.copy(emailError = null, genericError = null)
+        }
     }
 
     fun onPasswordChange(newPassword: String) {
         password = newPassword
+        // Limpia el error al empezar a escribir de nuevo
+        if (uiState.passwordError != null || uiState.genericError != null) {
+            uiState = uiState.copy(passwordError = null, genericError = null)
+        }
     }
 
     fun onLoginClicked() {
-        if (!validateInputs()) {
-            return
-        }
-
-        uiState = LoginUIState(isLoading = true)
-
         viewModelScope.launch {
-            try {
-                loginUseCase(email, password)
-                uiState = LoginUIState(success = true)
-            } catch (e: Exception) {
-                val errorState = when (e) {
-                    is FirebaseAuthInvalidUserException -> LoginUIState(emailError = "El correo no está registrado.")
-                    is FirebaseAuthInvalidCredentialsException -> LoginUIState(passwordError = "Contraseña incorrecta.")
-                    else -> LoginUIState(genericError = e.message ?: "Ocurrió un error inesperado.")
+            uiState = LoginUIState(isLoading = true)
+            // 2. Evaluar el resultado del UseCase para actuar en consecuencia
+            when (val result = loginUseCase(email, password)) {
+                is LoginResult.Success -> {
+                    uiState = LoginUIState(success = true)
                 }
-                uiState = errorState
+                is LoginResult.Failure.EmptyFields -> {
+                    uiState = LoginUIState(
+                        emailError = if(email.isBlank()) "El correo no puede estar vacío" else null,
+                        passwordError = if(password.isBlank()) "La contraseña no puede estar vacía" else null
+                    )
+                }
+                is LoginResult.Failure.InvalidCredentials -> {
+                    uiState = LoginUIState(genericError = "Correo o contraseña incorrectos.")
+                }
+                // 4. Corregido: Ahora `result` siempre tiene la propiedad `message`.
+                is LoginResult.Failure -> {
+                    uiState = LoginUIState(genericError = result.message ?: "Ocurrió un error inesperado.")
+                }
             }
         }
-    }
-
-    private fun validateInputs(): Boolean {
-        var emailError: String? = null
-        var passwordError: String? = null
-
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailError = "Correo electrónico no válido."
-        }
-
-        if (password.isBlank()) {
-            passwordError = "La contraseña no puede estar vacía."
-        }
-
-        val hasError = emailError != null || passwordError != null
-        if (hasError) {
-            uiState = LoginUIState(emailError = emailError, passwordError = passwordError)
-        }
-        return !hasError
     }
 }
