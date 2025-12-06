@@ -5,35 +5,30 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
-import org.koin.androidx.compose.koinViewModel
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
-import com.example.openhands.R
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.unit.dp
+import com.example.openhands.R
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
-    onLoginSuccess: () -> Unit = {}
+    onLoginSuccess: () -> Unit = {},
+    onNavigateBack: () -> Unit
 ) {
     var email by rememberSaveable { mutableStateOf(viewModel.email) }
     var password by rememberSaveable { mutableStateOf(viewModel.password) }
@@ -41,21 +36,29 @@ fun LoginScreen(
 
     val uiState = viewModel.uiState
 
-    // Sincronización con ViewModel
     LaunchedEffect(email) { viewModel.onEmailChange(email) }
     LaunchedEffect(password) { viewModel.onPasswordChange(password) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF152C58)),
+            .background(Color(0xFF152C58))
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Volver atrás",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -63,9 +66,7 @@ fun LoginScreen(
             Image(
                 painter = painterResource(id = R.drawable.openhands),
                 contentDescription = "Logo Openhands",
-                modifier = Modifier
-                    .height(140.dp)
-                    .fillMaxWidth()
+                modifier = Modifier.height(140.dp).fillMaxWidth()
             )
 
             Text(
@@ -75,17 +76,16 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
 
-
             val textFieldColors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
-                unfocusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.LightGray,
                 focusedLabelColor = Color.White,
-                unfocusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.LightGray,
                 cursorColor = Color.White,
-                focusedTrailingIconColor = Color.White,
-                unfocusedTrailingIconColor = Color.White,
-                focusedPlaceholderColor = Color.White,
-                unfocusedPlaceholderColor = Color.White
+                errorCursorColor = Color.White,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLabelColor = MaterialTheme.colorScheme.error,
+                errorSupportingTextColor = MaterialTheme.colorScheme.error
             )
 
             OutlinedTextField(
@@ -94,15 +94,12 @@ fun LoginScreen(
                 label = { Text("Correo electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = textFieldColors,
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
+                textStyle = TextStyle(color = Color.White),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                placeholder = {
-                    Text("usuario@ejemplo.com", color = Color.White.copy(alpha = 0.5f))
-                }
+                isError = uiState.emailError != null,
+                supportingText = { uiState.emailError?.let { Text(it) } },
+                colors = textFieldColors
             )
-
-
 
             OutlinedTextField(
                 value = password,
@@ -110,31 +107,31 @@ fun LoginScreen(
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = textFieldColors,
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
+                textStyle = TextStyle(color = Color.White),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                isError = uiState.passwordError != null,
+                supportingText = { uiState.passwordError?.let { Text(it) } },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        val image = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
+                        val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                         Icon(
-                            imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = null,
+                            imageVector = image,
+                            contentDescription = description,
                             tint = Color.White
                         )
                     }
-                }
+                },
+                colors = textFieldColors
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = {
-                    if (uiState !is LoginUIState.Loading) viewModel.onLoginClicked()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = uiState !is LoginUIState.Loading,
+                onClick = { if (!uiState.isLoading) viewModel.onLoginClicked() },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF1F9EBB),
                     contentColor = Color.White
@@ -146,21 +143,21 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            when (uiState) {
-                is LoginUIState.Loading -> {
-                    CircularProgressIndicator(color = Color.White)
-                }
-                is LoginUIState.Success -> {
-                    LaunchedEffect(Unit) { onLoginSuccess() }
-                }
-                is LoginUIState.Error -> {
-                    Text(
-                        text = uiState.message,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                else -> Unit
+            
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(top=8.dp))
+            }
+            
+            if (uiState.success) {
+                LaunchedEffect(Unit) { onLoginSuccess() }
+            }
+            
+            uiState.genericError?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
     }

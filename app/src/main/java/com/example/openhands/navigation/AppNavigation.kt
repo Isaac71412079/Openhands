@@ -40,6 +40,9 @@ fun AppNavigation() {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateBack = {
+                    navController.navigate(Screen.SplashAndWelcome.route)
                 }
             )
         }
@@ -51,8 +54,8 @@ fun AppNavigation() {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
                 },
-                onNavigateBack = { // <-- 2. Conectar la acción de retroceso
-                    navController.navigateUp()
+                onNavigateBack = {
+                    navController.navigate(Screen.SplashAndWelcome.route)
                 }
             )
         }

@@ -1,27 +1,35 @@
 package com.example.openhands.features.login.presentation
 
+import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.openhands.features.login.domain.model.LoginResult
 import com.example.openhands.features.login.domain.usecase.LoginUseCase
 import kotlinx.coroutines.launch
-import com.example.openhands.features.login.data.LoginDataStore
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+
+// 1. Estado de UI más detallado
+data class LoginUIState(
+    val isLoading: Boolean = false,
+    val success: Boolean = false,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val genericError: String? = null
+)
+
 class LoginViewModel(
-    private val loginUseCase: LoginUseCase,
-    private val loginDataStore: LoginDataStore
+    private val loginUseCase: LoginUseCase
 ) : ViewModel() {
 
-    // Estado para los campos de texto
     var email by mutableStateOf("")
         private set
     var password by mutableStateOf("")
         private set
 
-    // Estado general de la UI
-    var uiState by mutableStateOf<LoginUIState>(LoginUIState.Idle)
+    var uiState by mutableStateOf(LoginUIState())
         private set
 
     fun onEmailChange(newEmail: String) {
@@ -33,21 +41,43 @@ class LoginViewModel(
     }
 
     fun onLoginClicked() {
+        if (!validateInputs()) {
+            return
+        }
+
+        uiState = LoginUIState(isLoading = true)
+
         viewModelScope.launch {
-            uiState = LoginUIState.Loading
-            val result = loginUseCase(email, password)
-            uiState = when (result) {
-                is LoginResult.Success -> LoginUIState.Success
-                is LoginResult.Failure.EmptyFields -> LoginUIState.Error("Correo y contraseña no pueden estar vacíos.")
-                is LoginResult.Failure.InvalidCredentials -> LoginUIState.Error("Credenciales inválidas.")
+            try {
+                loginUseCase(email, password)
+                uiState = LoginUIState(success = true)
+            } catch (e: Exception) {
+                val errorState = when (e) {
+                    is FirebaseAuthInvalidUserException -> LoginUIState(emailError = "El correo no está registrado.")
+                    is FirebaseAuthInvalidCredentialsException -> LoginUIState(passwordError = "Contraseña incorrecta.")
+                    else -> LoginUIState(genericError = e.message ?: "Ocurrió un error inesperado.")
+                }
+                uiState = errorState
             }
         }
     }
-}
 
-sealed class LoginUIState {
-    object Idle : LoginUIState()
-    object Loading : LoginUIState()
-    object Success : LoginUIState()
-    data class Error(val message: String) : LoginUIState()
+    private fun validateInputs(): Boolean {
+        var emailError: String? = null
+        var passwordError: String? = null
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailError = "Correo electrónico no válido."
+        }
+
+        if (password.isBlank()) {
+            passwordError = "La contraseña no puede estar vacía."
+        }
+
+        val hasError = emailError != null || passwordError != null
+        if (hasError) {
+            uiState = LoginUIState(emailError = emailError, passwordError = passwordError)
+        }
+        return !hasError
+    }
 }

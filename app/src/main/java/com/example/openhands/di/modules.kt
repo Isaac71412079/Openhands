@@ -30,7 +30,7 @@ val appModule = module {
     single { LoginDataStore(androidContext()) }
     single<ILoginRepository> { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
-    viewModel { LoginViewModel(get(), get()) }
+    viewModel { LoginViewModel(get())}
 
     // --- Home Feature ---
     single<IHomeRepository> { HomeRepository() }
