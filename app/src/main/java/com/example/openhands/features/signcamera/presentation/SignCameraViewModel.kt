@@ -25,7 +25,7 @@ class SignCameraViewModel(
     private var textCollectorJob: Job? = null
 
     // Configura tu URL de ngrok aquí
-    private val SERVER_URL = "https://ceb83938643f.ngrok-free.app"
+    private val SERVER_URL = "http://54.172.43.102:5000"
 
     init {
         // Iniciar la conexión SocketIO
