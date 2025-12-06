@@ -5,14 +5,13 @@ sealed class Screen(val route: String) {
     object SplashAndWelcome : Screen("splash_welcome_screen")
 
     object Login: Screen("login_screen")
+    object Register : Screen("register_screen") // Ruta para la pantalla de registro
     object Home: Screen("home_screen")
 
     object TextSign : Screen("text_sign_screen")
 
     object SignCamera : Screen("sign_camera_screen")
 
-    // --- CORRECCIÓN ---
-    // El object History debe estar DENTRO de la clase Screen
     object History: Screen("history_screen")
     object MoreLanguagesWebView : Screen("more_languages_webview")
 }
