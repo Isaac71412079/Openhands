@@ -28,6 +28,7 @@ accompanistPermissions = "0.35.1-alpha"
 runtime = "1.9.4"
 socketio = "2.1.0" # <--- NUEVA VERSIÓN DE SOCKETIO
 firebaseBom = "34.6.0"
+foundation = "1.10.0"
 
 
 [libraries]
@@ -86,6 +87,7 @@ room-paging = { group="androidx.room", name="room-paging", version.ref = "room"}
 datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

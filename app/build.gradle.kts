@@ -147,6 +147,7 @@ dependencies {
 
     // --- Room (Local Database) ---
     implementation(libs.bundles.local)
+    implementation(libs.androidx.compose.foundation)
     ksp(libs.room.compiler)
     // annotationProcessor(libs.room.compiler) // You can remove this; KSP is the modern replacement.
 

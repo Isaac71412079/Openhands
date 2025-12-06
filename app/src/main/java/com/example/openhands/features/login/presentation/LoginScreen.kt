@@ -1,11 +1,14 @@
 package com.example.openhands.features.login.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -13,8 +16,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.fromColorLong
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -22,7 +29,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.openhands.R
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -67,7 +76,9 @@ fun LoginScreen(
             Image(
                 painter = painterResource(id = R.drawable.openhands),
                 contentDescription = "Logo Openhands",
-                modifier = Modifier.height(140.dp).fillMaxWidth()
+                modifier = Modifier
+                    .height(140.dp)
+                    .fillMaxWidth()
             )
 
             Text(
@@ -77,7 +88,6 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            // 1. Crear el pincel gradiente para los errores
             val errorGradientBrush = Brush.linearGradient(
                 colors = listOf(Color(0xFFFBC02D), Color(0xFFF57C00), Color(0xFFD32F2F))
             )
@@ -104,7 +114,6 @@ fun LoginScreen(
                 isError = uiState.emailError != null,
                 supportingText = {
                     uiState.emailError?.let {
-                        // 2. Aplicar el gradiente al texto de error
                         Text(
                             text = it,
                             style = LocalTextStyle.current.copy(brush = errorGradientBrush)
@@ -126,7 +135,6 @@ fun LoginScreen(
                 isError = uiState.passwordError != null,
                 supportingText = {
                     uiState.passwordError?.let {
-                        // 2. Aplicar el gradiente al texto de error
                         Text(
                             text = it,
                             style = LocalTextStyle.current.copy(brush = errorGradientBrush)
@@ -151,7 +159,9 @@ fun LoginScreen(
 
             Button(
                 onClick = { if (!uiState.isLoading) viewModel.onLoginClicked() },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF1F9EBB),
@@ -164,17 +174,62 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             if (uiState.isLoading) {
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(top=8.dp))
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(top = 8.dp))
             }
-            
+
             if (uiState.success) {
-                LaunchedEffect(Unit) { onLoginSuccess() }
+                val successGradientBrush = Brush.linearGradient(
+                    colors = listOf(Color(0xFF00C888), Color(0xFF84F800))
+                )
+
+                Dialog(onDismissRequest = {}) {
+                    Surface(
+                        border = BorderStroke(2.dp, Color.Green),
+                        shape = RoundedCornerShape(14.dp),
+                        color = Color.White
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .graphicsLayer(alpha = 0.99f) // Workaround for BlendMode
+                                    .drawWithCache {
+                                        onDrawWithContent {
+                                            drawContent()
+                                            drawRect(
+                                                brush = successGradientBrush,
+                                                blendMode = BlendMode.SrcAtop
+                                            )
+                                        }
+                                    }
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Login Exitoso!!!",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    brush = successGradientBrush,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                    }
+                }
+
+                LaunchedEffect(Unit) {
+                    delay(100L) // Muestra el pop-up por 2.5 segundos
+                    onLoginSuccess()
+                }
             }
-            
+
             uiState.genericError?.let {
-                // 3. Aplicar el gradiente al error genérico
                 Text(
                     text = it,
                     style = LocalTextStyle.current.copy(brush = errorGradientBrush),

@@ -1,19 +1,25 @@
 package com.example.openhands.features.auth.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -21,7 +27,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.openhands.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun RegisterScreen(
@@ -41,7 +49,6 @@ fun RegisterScreen(
         colors = listOf(Color(0xFF867AD2), Color(0xFF453F6C), Color(0xFF2F2C44))
     )
 
-    // 1. Crear el pincel gradiente para los errores
     val errorGradientBrush = Brush.linearGradient(
         colors = listOf(Color(0xFFFBC02D), Color(0xFFF57C00), Color(0xFFD32F2F))
     )
@@ -107,7 +114,6 @@ fun RegisterScreen(
                 isError = uiState.emailError != null,
                 supportingText = {
                     uiState.emailError?.let {
-                        // 2. Aplicar el gradiente al texto de error
                         Text(
                             text = it,
                             style = LocalTextStyle.current.copy(brush = errorGradientBrush)
@@ -189,14 +195,61 @@ fun RegisterScreen(
                 )
             }
 
-            if (uiState.isLoading) CircularProgressIndicator()
+            if (uiState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp))
+            }
 
             if (uiState.success) {
-                LaunchedEffect(Unit) { onRegisterSuccess() }
+                val successGradientBrush = Brush.linearGradient(
+                    colors = listOf(Color(0xFF00C888), Color(0xFF84F800))
+                )
+
+                Dialog(onDismissRequest = {}) {
+                    Surface(
+                        border = BorderStroke(2.dp, Color.Green),
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color.White,
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .graphicsLayer(alpha = 0.99f)
+                                    .drawWithCache {
+                                        onDrawWithContent {
+                                            drawContent()
+                                            drawRect(
+                                                brush = successGradientBrush,
+                                                blendMode = BlendMode.SrcAtop
+                                            )
+                                        }
+                                    }
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Registro Exitoso!!!",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    brush = successGradientBrush,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                    }
+                }
+
+                LaunchedEffect(Unit) {
+                    delay(2500L)
+                    onRegisterSuccess()
+                }
             }
 
             uiState.genericError?.let {
-                // 3. Aplicar el gradiente al error genérico
                 Text(
                     text = it,
                     style = LocalTextStyle.current.copy(brush = errorGradientBrush),
