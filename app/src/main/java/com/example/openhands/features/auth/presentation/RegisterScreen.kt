@@ -54,6 +54,8 @@ fun RegisterScreen(
                 label = { Text("Correo electrónico") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = uiState.emailError != null,
+                supportingText = { uiState.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -65,13 +67,11 @@ fun RegisterScreen(
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                isError = uiState.passwordError != null,
+                supportingText = { uiState.passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 trailingIcon = {
-                    val image = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
-
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(imageVector = image, contentDescription = description)
                     }
@@ -87,13 +87,11 @@ fun RegisterScreen(
                 singleLine = true,
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                isError = uiState.confirmPasswordError != null,
+                supportingText = { uiState.confirmPasswordError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 trailingIcon = {
-                    val image = if (confirmPasswordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
+                    val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
-
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                         Icon(imageVector = image, contentDescription = description)
                     }
@@ -103,16 +101,8 @@ fun RegisterScreen(
 
             // Botón de registro
             Button(
-                onClick = {
-                    viewModel.registerUser(
-                        email,
-                        password,
-                        confirmPassword
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp),
+                onClick = { viewModel.registerUser(email, password, confirmPassword) },
+                modifier = Modifier.fillMaxWidth().height(55.dp),
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Registrarse")
@@ -121,13 +111,12 @@ fun RegisterScreen(
             if (uiState.isLoading) CircularProgressIndicator()
 
             if (uiState.success) {
-                LaunchedEffect(Unit) {
-                    onRegisterSuccess()
-                }
+                LaunchedEffect(Unit) { onRegisterSuccess() }
             }
 
-            uiState.errorMessage?.let {
-                Text(text = it, color = Color.Red)
+            // Mensaje de error genérico
+            uiState.genericError?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error)
             }
         }
     }
