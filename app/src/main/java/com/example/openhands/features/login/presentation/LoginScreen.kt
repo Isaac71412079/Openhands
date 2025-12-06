@@ -143,7 +143,6 @@ fun LoginScreen(
                     text = "Ingresar",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
-
                 )
             }
 

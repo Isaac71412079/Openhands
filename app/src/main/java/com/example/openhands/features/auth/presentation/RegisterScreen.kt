@@ -1,5 +1,7 @@
 package com.example.openhands.features.auth.presentation
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -9,12 +11,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.openhands.R
 
 @Composable
 fun RegisterScreen(
@@ -29,9 +35,30 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(Color(0xFF867AD2), Color(0xFF453F6C), Color(0xFF2F2C44))
+    )
+
+    // Colores para bordes, etiquetas y cursor (el color del texto se define en textStyle)
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = Color.White,
+        unfocusedBorderColor = Color.White,
+        focusedLabelColor = Color.White,
+        unfocusedLabelColor = Color.LightGray,
+        cursorColor = Color.White,
+        errorCursorColor = Color.White,
+        errorBorderColor = MaterialTheme.colorScheme.error,
+        errorLabelColor = MaterialTheme.colorScheme.error,
+        errorSupportingTextColor = MaterialTheme.colorScheme.error
+    )
+
+    // Estilo de texto para la entrada del usuario (siempre blanco)
+    val textInputStyle = TextStyle(color = Color.White)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(gradientBrush)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -39,12 +66,19 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.openhands),
+                contentDescription = "Logo Openhands",
+                modifier = Modifier
+                    .height(140.dp)
+                    .fillMaxWidth()
+            )
 
             Text(
                 text = "Crear Cuenta",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF152C58)
+                color = Color.White
             )
 
             // Email
@@ -52,11 +86,13 @@ fun RegisterScreen(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Correo electrónico") },
+                textStyle = textInputStyle,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 isError = uiState.emailError != null,
-                supportingText = { uiState.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
-                modifier = Modifier.fillMaxWidth()
+                supportingText = { uiState.emailError?.let { Text(it) } },
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
 
             // Password
@@ -64,19 +100,21 @@ fun RegisterScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
+                textStyle = textInputStyle,
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = uiState.passwordError != null,
-                supportingText = { uiState.passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+                supportingText = { uiState.passwordError?.let { Text(it) } },
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = description)
+                        Icon(imageVector = image, contentDescription = description, tint = Color.White)
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
 
             // Confirm Password
@@ -84,28 +122,36 @@ fun RegisterScreen(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirmar contraseña") },
+                textStyle = textInputStyle,
                 singleLine = true,
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = uiState.confirmPasswordError != null,
-                supportingText = { uiState.confirmPasswordError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+                supportingText = { uiState.confirmPasswordError?.let { Text(it) } },
                 trailingIcon = {
                     val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                        Icon(imageVector = image, contentDescription = description)
+                        Icon(imageVector = image, contentDescription = description, tint = Color.White)
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
 
-            // Botón de registro
+            Spacer(modifier = Modifier.height(12.dp))
+
             Button(
                 onClick = { viewModel.registerUser(email, password, confirmPassword) },
-                modifier = Modifier.fillMaxWidth().height(55.dp),
-                shape = MaterialTheme.shapes.medium
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.medium,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F9EBB))
             ) {
-                Text("Registrarse")
+                Text(
+                    text = "Registrarse",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             if (uiState.isLoading) CircularProgressIndicator()
