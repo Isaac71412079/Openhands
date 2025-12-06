@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -25,6 +26,7 @@ import com.example.openhands.R
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
+    onNavigateBack: () -> Unit, // <-- 1. Nuevo parámetro para navegar atrás
     viewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     var email by remember { mutableStateOf("") }
@@ -39,10 +41,9 @@ fun RegisterScreen(
         colors = listOf(Color(0xFF867AD2), Color(0xFF453F6C), Color(0xFF2F2C44))
     )
 
-    // Colores para bordes, etiquetas y cursor (el color del texto se define en textStyle)
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = Color.White,
-        unfocusedBorderColor = Color.White,
+        unfocusedBorderColor = Color.LightGray,
         focusedLabelColor = Color.White,
         unfocusedLabelColor = Color.LightGray,
         cursorColor = Color.White,
@@ -52,7 +53,6 @@ fun RegisterScreen(
         errorSupportingTextColor = MaterialTheme.colorScheme.error
     )
 
-    // Estilo de texto para la entrada del usuario (siempre blanco)
     val textInputStyle = TextStyle(color = Color.White)
 
     Box(
@@ -62,6 +62,18 @@ fun RegisterScreen(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Volver atrás",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)

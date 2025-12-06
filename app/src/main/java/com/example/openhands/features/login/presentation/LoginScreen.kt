@@ -51,6 +51,7 @@ fun LoginScreen(
             .background(Color(0xFF152C58)),
         contentAlignment = Alignment.Center
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()

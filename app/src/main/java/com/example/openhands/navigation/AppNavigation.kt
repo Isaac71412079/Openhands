@@ -47,9 +47,12 @@ fun AppNavigation() {
         composable(Screen.Register.route) {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate(Screen.Login.route) {
+                    navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
+                },
+                onNavigateBack = { // <-- 2. Conectar la acción de retroceso
+                    navController.navigateUp()
                 }
             )
         }
