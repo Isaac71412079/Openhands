@@ -9,6 +9,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -24,12 +25,20 @@ class HomeViewModel(
             initialValue = emptyList()
         )
 
-    // 5. La función logout ahora limpia la sesión Y borra el historial de la base de datos.
+    // 1. Nuevo StateFlow para exponer el email del usuario.
+    val userEmail: StateFlow<String> = loginDataStore.getUserEmail()
+        .map { it ?: "" } // Si el email es nulo, devuelve un string vacío
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
+
     fun logout() {
         viewModelScope.launch {
             Firebase.auth.signOut()
             loginDataStore.clearData()
-            homeUseCase.clearHistory() // <-- ¡Paso crucial!
+            homeUseCase.clearHistory()
         }
     }
 }

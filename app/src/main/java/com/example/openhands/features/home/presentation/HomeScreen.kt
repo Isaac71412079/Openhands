@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.SpeakerNotes
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.ManageAccounts
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.openhands.R
 import kotlinx.coroutines.launch
@@ -26,6 +28,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    userEmail: String,
     onTextActionClick: () -> Unit,
     onCameraActionClick: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -34,30 +37,72 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val drawerBackgroundColor = Color(0xFFF0E8FF)
+    val drawerContentColor = Color(0xFF152C58)
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
-                Text("Openhands", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
-                Divider()
+            ModalDrawerSheet(
+                drawerContainerColor = drawerBackgroundColor,
+                drawerContentColor = drawerContentColor
+            ) {
+                Text(
+                    "Openhands",
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 4.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = drawerContentColor
+                )
+                Divider(modifier = Modifier.padding(vertical = 8.dp), color = drawerContentColor.copy(alpha = 0.2f))
+                Text(
+                    text = userEmail,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = drawerContentColor.copy(alpha = 0.7f), // Un poco más suave
+                    maxLines = 1
+                )
+                Divider(modifier = Modifier.padding(vertical = 8.dp), color = drawerContentColor.copy(alpha = 0.2f))
+
+                val navDrawerItemColors = NavigationDrawerItemDefaults.colors(
+                    unselectedIconColor = drawerContentColor,
+                    unselectedTextColor = drawerContentColor
+                )
+
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Outlined.History, "Historial de Traducciones") },
                     label = { Text("Historial de Traducciones") },
                     selected = false,
-                    onClick = { onHistoryClick(); scope.launch { drawerState.close() } }
+                    onClick = { onHistoryClick(); scope.launch { drawerState.close() } },
+                    colors = navDrawerItemColors
                 )
-                Divider()
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.AutoMirrored.Filled.SpeakerNotes, "Texto a Señas") },
+                    label = { Text("Texto a Señas") },
+                    selected = false,
+                    onClick = { onTextActionClick(); scope.launch { drawerState.close() } },
+                    colors = navDrawerItemColors
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Outlined.PhotoCamera, "Señas a Texto") },
+                    label = { Text("Señas a Texto") },
+                    selected = false,
+                    onClick = { onCameraActionClick(); scope.launch { drawerState.close() } },
+                    colors = navDrawerItemColors
+                )
+                Divider(modifier = Modifier.padding(vertical = 8.dp), color = drawerContentColor.copy(alpha = 0.2f))
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Outlined.ManageAccounts, "Cambiar cuenta") },
                     label = { Text("Cambiar cuenta") },
                     selected = false,
-                    onClick = onLogout // Llama a la misma función de logout
+                    onClick = onLogout,
+                    colors = navDrawerItemColors
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.AutoMirrored.Filled.Logout, "Cerrar Sesión") },
                     label = { Text("Cerrar Sesión") },
                     selected = false,
-                    onClick = onLogout
+                    onClick = onLogout,
+                    colors = navDrawerItemColors
                 )
             }
         }
@@ -67,8 +112,18 @@ fun HomeScreen(
                 TopAppBar(
                     title = { Text("Openhands", color = Color.White) },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, "Abrir menú", tint = Color.White)
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Menu, "Abrir/Cerrar menú",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF152C58))
@@ -113,7 +168,8 @@ private fun HomeScreenContent(
                 text = "Seleccione Una Acción:",
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White,
-                modifier = Modifier.padding(bottom = 40.dp)
+                modifier = Modifier.padding(bottom = 40.dp),
+                fontWeight = FontWeight.Bold
             )
 
             ActionButton(

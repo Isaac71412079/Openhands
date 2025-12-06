@@ -1,6 +1,8 @@
 package com.example.openhands.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -54,8 +56,12 @@ fun AppNavigation() {
         }
 
         composable(Screen.Home.route) {
+            // 4. Conectar el ViewModel y pasar el correo a la HomeScreen
             val homeViewModel: HomeViewModel = koinViewModel()
+            val userEmail by homeViewModel.userEmail.collectAsState()
+
             HomeScreen(
+                userEmail = userEmail,
                 onTextActionClick = { navController.navigate(Screen.TextSign.route) },
                 onCameraActionClick = { navController.navigate(Screen.SignCamera.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
