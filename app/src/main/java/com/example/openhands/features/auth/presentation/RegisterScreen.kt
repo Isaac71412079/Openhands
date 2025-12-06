@@ -26,7 +26,7 @@ import com.example.openhands.R
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
-    onNavigateBack: () -> Unit, // <-- 1. Nuevo parámetro para navegar atrás
+    onNavigateBack: () -> Unit,
     viewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     var email by remember { mutableStateOf("") }
@@ -41,6 +41,11 @@ fun RegisterScreen(
         colors = listOf(Color(0xFF867AD2), Color(0xFF453F6C), Color(0xFF2F2C44))
     )
 
+    // 1. Crear el pincel gradiente para los errores
+    val errorGradientBrush = Brush.linearGradient(
+        colors = listOf(Color(0xFFFBC02D), Color(0xFFF57C00), Color(0xFFD32F2F))
+    )
+
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = Color.White,
         unfocusedBorderColor = Color.LightGray,
@@ -49,8 +54,7 @@ fun RegisterScreen(
         cursorColor = Color.White,
         errorCursorColor = Color.White,
         errorBorderColor = MaterialTheme.colorScheme.error,
-        errorLabelColor = MaterialTheme.colorScheme.error,
-        errorSupportingTextColor = MaterialTheme.colorScheme.error
+        errorLabelColor = MaterialTheme.colorScheme.error
     )
 
     val textInputStyle = TextStyle(color = Color.White)
@@ -93,7 +97,6 @@ fun RegisterScreen(
                 color = Color.White
             )
 
-            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -102,12 +105,19 @@ fun RegisterScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 isError = uiState.emailError != null,
-                supportingText = { uiState.emailError?.let { Text(it) } },
+                supportingText = {
+                    uiState.emailError?.let {
+                        // 2. Aplicar el gradiente al texto de error
+                        Text(
+                            text = it,
+                            style = LocalTextStyle.current.copy(brush = errorGradientBrush)
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = textFieldColors
             )
 
-            // Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -117,7 +127,14 @@ fun RegisterScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = uiState.passwordError != null,
-                supportingText = { uiState.passwordError?.let { Text(it) } },
+                supportingText = {
+                    uiState.passwordError?.let {
+                        Text(
+                            text = it,
+                            style = LocalTextStyle.current.copy(brush = errorGradientBrush)
+                        )
+                    }
+                },
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
@@ -129,7 +146,6 @@ fun RegisterScreen(
                 colors = textFieldColors
             )
 
-            // Confirm Password
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
@@ -139,7 +155,14 @@ fun RegisterScreen(
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = uiState.confirmPasswordError != null,
-                supportingText = { uiState.confirmPasswordError?.let { Text(it) } },
+                supportingText = {
+                    uiState.confirmPasswordError?.let {
+                        Text(
+                            text = it,
+                            style = LocalTextStyle.current.copy(brush = errorGradientBrush)
+                        )
+                    }
+                },
                 trailingIcon = {
                     val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     val description = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
@@ -172,9 +195,13 @@ fun RegisterScreen(
                 LaunchedEffect(Unit) { onRegisterSuccess() }
             }
 
-            // Mensaje de error genérico
             uiState.genericError?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.error)
+                // 3. Aplicar el gradiente al error genérico
+                Text(
+                    text = it,
+                    style = LocalTextStyle.current.copy(brush = errorGradientBrush),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
     }

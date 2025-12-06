@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -76,6 +77,11 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
 
+            // 1. Crear el pincel gradiente para los errores
+            val errorGradientBrush = Brush.linearGradient(
+                colors = listOf(Color(0xFFFBC02D), Color(0xFFF57C00), Color(0xFFD32F2F))
+            )
+
             val textFieldColors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.LightGray,
@@ -84,8 +90,7 @@ fun LoginScreen(
                 cursorColor = Color.White,
                 errorCursorColor = Color.White,
                 errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLabelColor = MaterialTheme.colorScheme.error,
-                errorSupportingTextColor = MaterialTheme.colorScheme.error
+                errorLabelColor = MaterialTheme.colorScheme.error
             )
 
             OutlinedTextField(
@@ -97,7 +102,15 @@ fun LoginScreen(
                 textStyle = TextStyle(color = Color.White),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 isError = uiState.emailError != null,
-                supportingText = { uiState.emailError?.let { Text(it) } },
+                supportingText = {
+                    uiState.emailError?.let {
+                        // 2. Aplicar el gradiente al texto de error
+                        Text(
+                            text = it,
+                            style = LocalTextStyle.current.copy(brush = errorGradientBrush)
+                        )
+                    }
+                },
                 colors = textFieldColors
             )
 
@@ -111,7 +124,15 @@ fun LoginScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = uiState.passwordError != null,
-                supportingText = { uiState.passwordError?.let { Text(it) } },
+                supportingText = {
+                    uiState.passwordError?.let {
+                        // 2. Aplicar el gradiente al texto de error
+                        Text(
+                            text = it,
+                            style = LocalTextStyle.current.copy(brush = errorGradientBrush)
+                        )
+                    }
+                },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         val image = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
@@ -153,9 +174,10 @@ fun LoginScreen(
             }
             
             uiState.genericError?.let {
+                // 3. Aplicar el gradiente al error genérico
                 Text(
                     text = it,
-                    color = MaterialTheme.colorScheme.error,
+                    style = LocalTextStyle.current.copy(brush = errorGradientBrush),
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
