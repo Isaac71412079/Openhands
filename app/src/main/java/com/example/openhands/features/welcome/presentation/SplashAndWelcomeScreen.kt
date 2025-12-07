@@ -156,7 +156,7 @@ private fun AuthButtons(
     onLoginClicked: () -> Unit,
     onRegisterClicked: () -> Unit
 ) {
-    Column(modifier = Modifier.width(300.dp)) {
+    Column(modifier = Modifier.width(340.dp)) {
         Button(
             onClick = onLoginClicked,
             modifier = Modifier.fillMaxWidth().height(57.dp),

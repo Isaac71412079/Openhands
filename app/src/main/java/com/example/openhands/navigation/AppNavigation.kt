@@ -40,14 +40,16 @@ fun AppNavigation() {
                         popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
                 },
-                onNavigateBack = { navController.navigateUp() }
+                onNavigateBack = { navController.navigateUp() },
+                // 6. Conectar la navegación al registro
+                onRegisterClicked = { navController.navigate(Screen.Register.route) }
             )
         }
 
         composable(Screen.Register.route) {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate(Screen.Login.route) {
+                    navController.navigate(Screen.Home.route) {
                         popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
                 },
@@ -56,7 +58,6 @@ fun AppNavigation() {
         }
 
         composable(Screen.Home.route) {
-            // 4. Conectar el ViewModel y pasar el correo a la HomeScreen
             val homeViewModel: HomeViewModel = koinViewModel()
             val userEmail by homeViewModel.userEmail.collectAsState()
 

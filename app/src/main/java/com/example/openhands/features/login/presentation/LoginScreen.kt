@@ -38,19 +38,19 @@ import org.koin.androidx.compose.koinViewModel
 fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
     onLoginSuccess: () -> Unit = {},
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onRegisterClicked: () -> Unit // 1. Nuevo parámetro para navegar al registro
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF152C58))
     ) {
-        // 1. Unificar en una sola disposición centrada y desplazable.
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 28.dp, vertical = 64.dp), // Padding para no pegar al borde superior/inferior
+                .padding(horizontal = 28.dp, vertical = 64.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -60,10 +60,9 @@ fun LoginScreen(
                 modifier = Modifier.height(140.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            LoginContent(viewModel, onLoginSuccess)
+            LoginContent(viewModel, onLoginSuccess, onRegisterClicked) // 2. Pasar la acción
         }
 
-        // 2. El botón de retroceso se mantiene fijo en la esquina.
         IconButton(
             onClick = onNavigateBack,
             modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
@@ -78,10 +77,12 @@ fun LoginScreen(
     }
 }
 
-// Ya no se necesitan los layouts separados para Portrait y Landscape
-
 @Composable
-private fun LoginContent(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
+private fun LoginContent(
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit,
+    onRegisterClicked: () -> Unit // 3. Recibir la acción
+) {
     var email by rememberSaveable { mutableStateOf(viewModel.email) }
     var password by rememberSaveable { mutableStateOf(viewModel.password) }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -90,7 +91,6 @@ private fun LoginContent(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) 
     LaunchedEffect(email) { viewModel.onEmailChange(email) }
     LaunchedEffect(password) { viewModel.onPasswordChange(password) }
 
-    // 3. La columna con ancho limitado se mantiene, evitando que los campos se estiren.
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.widthIn(max = 380.dp)
@@ -171,6 +171,41 @@ private fun LoginContent(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) 
                 fontWeight = FontWeight.Bold
             )
         }
+
+        // 4. Divisor "o"
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.5f))
+            Text(
+                text = "o",
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.5f))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 5. Botón "Crear Cuenta nueva"
+        Button(
+            onClick = onRegisterClicked,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFF0E8FF),
+                contentColor = Color(0xFF152C58)
+            )
+        ) {
+            Text(
+                text = "Crear Cuenta nueva",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
 
         if (uiState.isLoading) {
             CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(top=8.dp))
