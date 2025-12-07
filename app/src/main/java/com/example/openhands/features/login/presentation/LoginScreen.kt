@@ -1,5 +1,6 @@
 package com.example.openhands.features.login.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -172,6 +173,16 @@ private fun LoginContent(
             )
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        uiState.genericError?.let {
+            Text(
+                text = it,
+                style = LocalTextStyle.current.copy(brush = errorGradientBrush),
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
         // 4. Divisor "o"
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -193,7 +204,7 @@ private fun LoginContent(
         // 5. Botón "Crear Cuenta nueva"
         Button(
             onClick = onRegisterClicked,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier.fillMaxWidth().height(49.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFF0E8FF),
                 contentColor = Color(0xFF152C58)
@@ -206,19 +217,21 @@ private fun LoginContent(
             )
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (uiState.isLoading) {
-            CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(top=8.dp))
+            CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(top=16.dp))
         }
 
         if (uiState.success) {
             val successGradientBrush = Brush.linearGradient(
-                colors = listOf(Color(0xFF93F802), Color(0xFF00C853))
+                colors = listOf(Color(0xFF6CB600), Color(0xFF00CE1E))
             )
             Dialog(onDismissRequest = {}) {
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
+                    color = Color.Black,
+                    border = BorderStroke(2.dp, Color.Green)
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -250,14 +263,6 @@ private fun LoginContent(
                 delay(2000L)
                 onLoginSuccess()
             }
-        }
-
-        uiState.genericError?.let {
-            Text(
-                text = it,
-                style = LocalTextStyle.current.copy(brush = errorGradientBrush),
-                modifier = Modifier.padding(top = 8.dp)
-            )
         }
     }
 }

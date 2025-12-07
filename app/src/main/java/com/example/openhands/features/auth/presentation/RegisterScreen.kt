@@ -1,5 +1,6 @@
 package com.example.openhands.features.auth.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -222,18 +223,21 @@ private fun RegisterContent(
             )
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp))
+            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
         }
 
         if (uiState.success) {
             val successGradientBrush = Brush.linearGradient(
-                colors = listOf(Color(0xFF51FF21), Color(0xFF00C853))
+                colors = listOf(Color(0xFF6CB600), Color(0xFF00CE1E))
             )
             Dialog(onDismissRequest = {}) {
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
+                    color = Color.Black,
+                    border = BorderStroke(2.dp, Color.Green)
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
