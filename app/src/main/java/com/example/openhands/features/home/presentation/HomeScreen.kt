@@ -50,7 +50,6 @@ fun HomeScreen(
                 drawerContainerColor = drawerBackgroundColor,
                 drawerContentColor = drawerContentColor
             ) {
-                // 1. Envolver todo el contenido en una columna desplazable
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     Row(
                         modifier = Modifier
@@ -75,7 +74,6 @@ fun HomeScreen(
                         )
                     }
 
-                    // 2. Añadir el logo de la app
                     Image(
                         painter = painterResource(id = R.drawable.openhands),
                         contentDescription = "Logo de Openhands",
@@ -158,7 +156,7 @@ fun HomeScreen(
                     title = { },
                     navigationIcon = {
                         Row(
-                            modifier = Modifier.padding(start = 16.dp, top = 16.dp),
+                            modifier = Modifier.padding(start = 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
@@ -197,43 +195,87 @@ private fun HomeScreenContent(
     onTextActionClick: () -> Unit,
     onCameraActionClick: () -> Unit
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF152C58))
             .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()), // <-- CONTENIDO DESPLAZABLE
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        if (maxWidth > maxHeight) {
+            LandscapeHomeScreen(onTextActionClick, onCameraActionClick)
+        } else {
+            PortraitHomeScreen(onTextActionClick, onCameraActionClick)
+        }
+    }
+}
+
+@Composable
+private fun PortraitHomeScreen(
+    onTextActionClick: () -> Unit,
+    onCameraActionClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.openhands),
+            contentDescription = "Logo de OpenHands",
+            modifier = Modifier.size(120.dp).clip(RoundedCornerShape(24.dp))
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Seleccione Una Acción:",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 40.dp),
+            fontWeight = FontWeight.Bold
+        )
+        ActionButton(
+            iconResId = R.drawable.text,
+            contentDescription = "Texto a Señas",
+            onClick = onTextActionClick
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        ActionButton(
+            iconResId = R.drawable.camera,
+            contentDescription = "Señas a Texto",
+            onClick = onCameraActionClick
+        )
+    }
+}
+
+@Composable
+private fun LandscapeHomeScreen(
+    onTextActionClick: () -> Unit,
+    onCameraActionClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally // 1. Centrar todo el contenido
+    ) {
+        Text(
+            text = "Seleccione Una Acción:",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier // 2. Quitar el padding para que se centre correctamente
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.openhands),
-                contentDescription = "Logo de OpenHands",
-                modifier = Modifier.size(120.dp).clip(RoundedCornerShape(24.dp))
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Seleccione Una Acción:",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 40.dp),
-                fontWeight = FontWeight.Bold
-            )
-
             ActionButton(
                 iconResId = R.drawable.text,
                 contentDescription = "Texto a Señas",
                 onClick = onTextActionClick
             )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             ActionButton(
                 iconResId = R.drawable.camera,
                 contentDescription = "Señas a Texto",
