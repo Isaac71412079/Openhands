@@ -3,7 +3,7 @@ package com.example.openhands.navigation
 sealed class Screen(val route: String) {
     // CAMBIO: Se reemplazan Splash y Welcome por una única ruta
     object SplashAndWelcome : Screen("splash_welcome_screen")
-
+    object PrivacyPolicy : Screen("privacy_policy_screen")
     object Login: Screen("login_screen")
     object Register : Screen("register_screen") // Ruta para la pantalla de registro
     object Home: Screen("home_screen")

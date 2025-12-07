@@ -12,6 +12,8 @@ import com.example.openhands.features.home.data.repository.HomeRepository
 import com.example.openhands.features.home.domain.repository.IHomeRepository
 import com.example.openhands.features.home.domain.usecase.HomeUseCase
 import com.example.openhands.features.home.presentation.HomeViewModel
+import com.example.openhands.features.privacy_policy.data.PrivacyPolicyDataStore
+import com.example.openhands.features.privacy_policy.viewmodel.PrivacyPolicyViewModel
 import com.example.openhands.features.textsign.data.repository.TextSignRepository
 import com.example.openhands.features.textsign.domain.repository.ITextSignRepository
 import com.example.openhands.features.textsign.domain.usecase.TranslateTextUseCase
@@ -34,6 +36,10 @@ val appModule = module {
         ).build()
     }
     single { get<AppDatabase>().historyDao() }
+
+    // --- Privacy Policy ---
+    single { PrivacyPolicyDataStore(androidContext()) }
+    viewModel { PrivacyPolicyViewModel(get()) }
 
     // --- Login & Auth ---
     single { LoginDataStore(androidContext()) }

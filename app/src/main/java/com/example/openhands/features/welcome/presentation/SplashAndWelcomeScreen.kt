@@ -24,14 +24,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.openhands.R
+import com.example.openhands.features.privacy_policy.PrivacyPolicyScreen
+import com.example.openhands.features.privacy_policy.viewmodel.PrivacyPolicyViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SplashAndWelcomeScreen(
     onLoginClicked: () -> Unit,
-    onRegisterClicked: () -> Unit
+    onRegisterClicked: () -> Unit,
 ) {
-
+    val privacyPolicyViewModel: PrivacyPolicyViewModel = koinViewModel()
+    val hasAcceptedPrivacyPolicy by privacyPolicyViewModel.hasAcceptedPrivacyPolicy.collectAsState()
     var isSplashFinished by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
@@ -51,6 +55,12 @@ fun SplashAndWelcomeScreen(
             } else {
                 PortraitWelcomeLayout(isSplashFinished, onLoginClicked, onRegisterClicked)
             }
+        }
+
+        if (isSplashFinished && !hasAcceptedPrivacyPolicy) {
+            PrivacyPolicyScreen(
+                onContinueClicked = { privacyPolicyViewModel.acceptPrivacyPolicy() }
+            )
         }
     }
 }

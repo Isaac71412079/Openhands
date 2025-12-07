@@ -41,7 +41,6 @@ fun AppNavigation() {
                     }
                 },
                 onNavigateBack = { navController.navigateUp() },
-                // 6. Conectar la navegación al registro
                 onRegisterClicked = { navController.navigate(Screen.Register.route) }
             )
         }
