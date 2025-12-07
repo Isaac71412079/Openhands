@@ -66,7 +66,7 @@ fun LoginScreen(
         // 2. El botón de retroceso se mantiene fijo en la esquina.
         IconButton(
             onClick = onNavigateBack,
-            modifier = Modifier.align(Alignment.TopStart).padding(8.dp)
+            modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -178,7 +178,7 @@ private fun LoginContent(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) 
 
         if (uiState.success) {
             val successGradientBrush = Brush.linearGradient(
-                colors = listOf(Color(0xFFB9F6CA), Color(0xFF00C853))
+                colors = listOf(Color(0xFF93F802), Color(0xFF00C853))
             )
             Dialog(onDismissRequest = {}) {
                 Surface(
@@ -212,7 +212,7 @@ private fun LoginContent(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) 
                 }
             }
             LaunchedEffect(Unit) {
-                delay(2500L)
+                delay(2000L)
                 onLoginSuccess()
             }
         }

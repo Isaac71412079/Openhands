@@ -90,7 +90,7 @@ fun HomeScreen(
                         text = userEmail,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                            .padding(horizontal = 32.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = drawerContentColor.copy(alpha = 0.7f),
                         maxLines = 1

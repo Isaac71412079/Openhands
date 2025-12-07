@@ -26,7 +26,6 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-
             .background(Color(0xFF152C58)),
         contentAlignment = Alignment.Center
     ) {
