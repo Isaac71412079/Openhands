@@ -156,7 +156,7 @@ fun HomeScreen(
                     title = { },
                     navigationIcon = {
                         Row(
-                            modifier = Modifier.padding(start = 16.dp),
+                            modifier = Modifier.padding(start = 16.dp, top= 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(
