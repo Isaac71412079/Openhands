@@ -224,7 +224,7 @@ private fun PortraitHomeScreen(
         Image(
             painter = painterResource(id = R.drawable.openhands),
             contentDescription = "Logo de OpenHands",
-            modifier = Modifier.size(120.dp).clip(RoundedCornerShape(24.dp))
+            modifier = Modifier.size(150.dp).clip(RoundedCornerShape(24.dp))
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
