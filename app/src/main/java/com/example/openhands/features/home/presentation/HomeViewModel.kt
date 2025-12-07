@@ -4,25 +4,41 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.openhands.features.home.data.model.TranslationHistoryItem
 import com.example.openhands.features.home.domain.usecase.HomeUseCase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.openhands.features.login.data.LoginDataStore
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val homeUseCase: HomeUseCase
+    private val homeUseCase: HomeUseCase,
+    private val loginDataStore: LoginDataStore
 ) : ViewModel() {
 
-    private val _historyState = MutableStateFlow<List<TranslationHistoryItem>>(emptyList())
-    val historyState = _historyState.asStateFlow()
+    val historyState: StateFlow<List<TranslationHistoryItem>> = homeUseCase.getHistory()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    init {
-        loadHistory()
-    }
+    // 1. Nuevo StateFlow para exponer el email del usuario.
+    val userEmail: StateFlow<String> = loginDataStore.getUserEmail()
+        .map { it ?: "" } // Si el email es nulo, devuelve un string vacío
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
 
-    // Se puede llamar a esta función para recargar el historial si es necesario
-    fun loadHistory() {
+    fun logout() {
         viewModelScope.launch {
-            _historyState.value = homeUseCase.getHistory()
+            Firebase.auth.signOut()
+            loginDataStore.clearData()
+            homeUseCase.clearHistory()
         }
     }
 }

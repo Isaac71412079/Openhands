@@ -8,46 +8,66 @@ import androidx.lifecycle.viewModelScope
 import com.example.openhands.features.login.domain.model.LoginResult
 import com.example.openhands.features.login.domain.usecase.LoginUseCase
 import kotlinx.coroutines.launch
-import com.example.openhands.features.login.data.LoginDataStore
+
+// 1. Estado de UI más detallado, similar a Register
+data class LoginUIState(
+    val isLoading: Boolean = false,
+    val success: Boolean = false,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val genericError: String? = null
+)
+
 class LoginViewModel(
-    private val loginUseCase: LoginUseCase,
-    private val loginDataStore: LoginDataStore
+    private val loginUseCase: LoginUseCase
 ) : ViewModel() {
 
-    // Estado para los campos de texto
     var email by mutableStateOf("")
         private set
     var password by mutableStateOf("")
         private set
 
-    // Estado general de la UI
-    var uiState by mutableStateOf<LoginUIState>(LoginUIState.Idle)
+    var uiState by mutableStateOf(LoginUIState())
         private set
 
     fun onEmailChange(newEmail: String) {
         email = newEmail
+        // Limpia el error al empezar a escribir de nuevo
+        if (uiState.emailError != null || uiState.genericError != null) {
+            uiState = uiState.copy(emailError = null, genericError = null)
+        }
     }
 
     fun onPasswordChange(newPassword: String) {
         password = newPassword
+        // Limpia el error al empezar a escribir de nuevo
+        if (uiState.passwordError != null || uiState.genericError != null) {
+            uiState = uiState.copy(passwordError = null, genericError = null)
+        }
     }
 
     fun onLoginClicked() {
         viewModelScope.launch {
-            uiState = LoginUIState.Loading
-            val result = loginUseCase(email, password)
-            uiState = when (result) {
-                is LoginResult.Success -> LoginUIState.Success
-                is LoginResult.Failure.EmptyFields -> LoginUIState.Error("Correo y contraseña no pueden estar vacíos.")
-                is LoginResult.Failure.InvalidCredentials -> LoginUIState.Error("Credenciales inválidas.")
+            uiState = LoginUIState(isLoading = true)
+            // 2. Evaluar el resultado del UseCase para actuar en consecuencia
+            when (val result = loginUseCase(email, password)) {
+                is LoginResult.Success -> {
+                    uiState = LoginUIState(success = true)
+                }
+                is LoginResult.Failure.EmptyFields -> {
+                    uiState = LoginUIState(
+                        emailError = if(email.isBlank()) "El correo no puede estar vacío" else null,
+                        passwordError = if(password.isBlank()) "La contraseña no puede estar vacía" else null
+                    )
+                }
+                is LoginResult.Failure.InvalidCredentials -> {
+                    uiState = LoginUIState(genericError = "Correo o contraseña incorrectos.")
+                }
+                // 4. Corregido: Ahora `result` siempre tiene la propiedad `message`.
+                is LoginResult.Failure -> {
+                    uiState = LoginUIState(genericError = result.message ?: "Ocurrió un error inesperado.")
+                }
             }
         }
     }
-}
-
-sealed class LoginUIState {
-    object Idle : LoginUIState()
-    object Loading : LoginUIState()
-    object Success : LoginUIState()
-    data class Error(val message: String) : LoginUIState()
 }

@@ -1,19 +1,22 @@
 package com.example.openhands.features.auth.presentation
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
-// Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-
+// 1. Estado de UI más detallado
 data class RegisterUiState(
     val isLoading: Boolean = false,
     val success: Boolean = false,
-    val errorMessage: String? = null
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val confirmPasswordError: String? = null,
+    val genericError: String? = null
 )
 
 class RegisterViewModel : ViewModel() {
@@ -29,45 +32,63 @@ class RegisterViewModel : ViewModel() {
         password: String,
         confirmPassword: String
     ) {
-        // 🔹 Validaciones básicas
-        if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-            _uiState.value = RegisterUiState(errorMessage = "Completa todos los campos")
+        // 2. Validar localmente ANTES de llamar a Firebase
+        if (!validateInputs(email, password, confirmPassword)) {
             return
         }
 
-        if (password != confirmPassword) {
-            _uiState.value = RegisterUiState(errorMessage = "Las contraseñas no coinciden")
-            return
-        }
-
-        // 🔹 Loading
         _uiState.value = RegisterUiState(isLoading = true)
 
-        // 🔥 Crear usuario con Firebase Auth
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
-
                 val uid = result.user?.uid ?: return@addOnSuccessListener
-
-                // 🔥 Datos mínimos almacenados en Firestore
                 val userMap = mapOf(
                     "uid" to uid,
                     "email" to email,
                     "creadoEn" to com.google.firebase.Timestamp.now()
                 )
 
-                db.collection("users")
-                    .document(uid)
-                    .set(userMap)
-                    .addOnSuccessListener {
-                        _uiState.value = RegisterUiState(success = true)
-                    }
-                    .addOnFailureListener {
-                        _uiState.value = RegisterUiState(errorMessage = "Error guardando datos en Firestore")
-                    }
+                db.collection("users").document(uid).set(userMap)
+                    .addOnSuccessListener { _uiState.value = RegisterUiState(success = true) }
+                    .addOnFailureListener { _uiState.value = RegisterUiState(genericError = "Error al guardar los datos.") }
             }
-            .addOnFailureListener {
-                _uiState.value = RegisterUiState(errorMessage = it.message ?: "Error desconocido")
+            .addOnFailureListener { exception ->
+                // 3. Traducir errores de Firebase
+                val errorMessage = when (exception) {
+                    is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es incorrecto."
+                    is FirebaseAuthUserCollisionException -> "El correo electrónico ya está en uso."
+                    else -> exception.message ?: "Ocurrió un error desconocido."
+                }
+                _uiState.value = RegisterUiState(emailError = errorMessage)
             }
+    }
+
+    private fun validateInputs(email: String, password: String, confirmPassword: String): Boolean {
+        var emailError: String? = null
+        var passwordError: String? = null
+        var confirmPasswordError: String? = null
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailError = "Correo electrónico no válido."
+        }
+
+        if (password.length < 6) {
+            passwordError = "La contraseña debe tener al menos 6 caracteres."
+        }
+
+        if (password != confirmPassword) {
+            passwordError = "Las contraseñas no coinciden."
+            confirmPasswordError = "Las contraseñas no coinciden."
+        }
+
+        val hasError = emailError != null || passwordError != null || confirmPasswordError != null
+        if (hasError) {
+            _uiState.value = RegisterUiState(
+                emailError = emailError,
+                passwordError = passwordError,
+                confirmPasswordError = confirmPasswordError
+            )
+        }
+        return !hasError
     }
 }

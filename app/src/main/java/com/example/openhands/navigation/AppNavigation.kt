@@ -1,17 +1,22 @@
 package com.example.openhands.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.openhands.features.auth.presentation.RegisterScreen
 import com.example.openhands.features.home.presentation.HistoryScreen
 import com.example.openhands.features.home.presentation.HomeScreen
+import com.example.openhands.features.home.presentation.HomeViewModel
 import com.example.openhands.features.login.presentation.LoginScreen
 import com.example.openhands.features.signcamera.presentation.SignCameraScreen
 import com.example.openhands.features.textsign.presentation.TextSignScreen
 import com.example.openhands.features.textsign.presentation.WebViewScreen
 import com.example.openhands.features.welcome.presentation.SplashAndWelcomeScreen
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AppNavigation() {
@@ -23,14 +28,8 @@ fun AppNavigation() {
     ) {
         composable(Screen.SplashAndWelcome.route) {
             SplashAndWelcomeScreen(
-                onLoginClicked = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.SplashAndWelcome.route) { inclusive = true }
-                    }
-                },
-                onRegisterClicked = {
-                    navController.navigate(Screen.Register.route)
-                }
+                onLoginClicked = { navController.navigate(Screen.Login.route) },
+                onRegisterClicked = { navController.navigate(Screen.Register.route) }
             )
         }
 
@@ -38,9 +37,12 @@ fun AppNavigation() {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
-                }
+                },
+                onNavigateBack = { navController.navigateUp() },
+                // 6. Conectar la navegación al registro
+                onRegisterClicked = { navController.navigate(Screen.Register.route) }
             )
         }
 
@@ -48,17 +50,28 @@ fun AppNavigation() {
             RegisterScreen(
                 onRegisterSuccess = {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Register.route) { inclusive = true }
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
-                }
+                },
+                onNavigateBack = { navController.navigateUp() }
             )
         }
 
         composable(Screen.Home.route) {
+            val homeViewModel: HomeViewModel = koinViewModel()
+            val userEmail by homeViewModel.userEmail.collectAsState()
+
             HomeScreen(
+                userEmail = userEmail,
                 onTextActionClick = { navController.navigate(Screen.TextSign.route) },
-                onImageActionClick = { navController.navigate(Screen.SignCamera.route) },
-                onHistoryClick = { navController.navigate(Screen.History.route) }
+                onCameraActionClick = { navController.navigate(Screen.SignCamera.route) },
+                onHistoryClick = { navController.navigate(Screen.History.route) },
+                onLogout = {
+                    homeViewModel.logout()
+                    navController.navigate(Screen.SplashAndWelcome.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                }
             )
         }
 
