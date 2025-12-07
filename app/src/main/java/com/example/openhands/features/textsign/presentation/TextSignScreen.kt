@@ -39,13 +39,16 @@ fun TextSignScreen(
             TopAppBar(
                 title = { },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
+                    // 1. Envolver el icono en una Row con padding para alinearlo
+                    Row(modifier = Modifier.padding(start = 16.dp, top = 16.dp)) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                 },
                 actions = {
