@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.SpeakerNotes
@@ -48,97 +50,112 @@ fun HomeScreen(
                 drawerContainerColor = drawerBackgroundColor,
                 drawerContentColor = drawerContentColor
             ) {
-                // 1. Cabecera con padding unificado
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { scope.launch { drawerState.close() } }) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Cerrar menú",
-                            tint = drawerContentColor,
-                            modifier = Modifier.size(32.dp)
+                // 1. Envolver todo el contenido en una columna desplazable
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { scope.launch { drawerState.close() } }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Cerrar menú",
+                                tint = drawerContentColor,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Openhands",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = drawerContentColor,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
+
+                    // 2. Añadir el logo de la app
+                    Image(
+                        painter = painterResource(id = R.drawable.openhands),
+                        contentDescription = "Logo de Openhands",
+                        modifier = Modifier
+                            .height(120.dp)
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                    )
+
+                    Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
+
                     Text(
-                        text = "Openhands",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = drawerContentColor,
-                        fontWeight = FontWeight.Bold
+                        text = userEmail,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = drawerContentColor.copy(alpha = 0.7f),
+                        maxLines = 1
                     )
-                }
 
-                Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
+                    Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
 
-                Text(
-                    text = userEmail,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = drawerContentColor.copy(alpha = 0.7f),
-                    maxLines = 1
-                )
-
-                Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
-
-                val navDrawerItemColors = NavigationDrawerItemDefaults.colors(
-                    unselectedIconColor = drawerContentColor,
-                    unselectedTextColor = drawerContentColor
-                )
-                // 2. Items del menú con padding unificado
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.History, "Historial de Traducciones") },
-                        label = { Text("Historial de Traducciones") },
-                        selected = false,
-                        onClick = { onHistoryClick(); scope.launch { drawerState.close() } },
-                        colors = navDrawerItemColors
-                    )
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.AutoMirrored.Filled.SpeakerNotes, "Texto a Señas") },
-                        label = { Text("Texto a Señas") },
-                        selected = false,
-                        onClick = { onTextActionClick(); scope.launch { drawerState.close() } },
-                        colors = navDrawerItemColors
-                    )
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.PhotoCamera, "Señas a Texto") },
-                        label = { Text("Señas a Texto") },
-                        selected = false,
-                        onClick = { onCameraActionClick(); scope.launch { drawerState.close() } },
-                        colors = navDrawerItemColors
-                    )
-                }
-                Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.ManageAccounts, "Cambiar cuenta") },
-                        label = { Text("Cambiar cuenta") },
-                        selected = false,
-                        onClick = onLogout,
-                        colors = navDrawerItemColors
-                    )
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.AutoMirrored.Filled.Logout, "Cerrar Sesión") },
-                        label = { Text("Cerrar Sesión") },
-                        selected = false,
-                        onClick = onLogout,
-                        colors = navDrawerItemColors
-                    )
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        val navDrawerItemColors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = drawerContentColor,
+                            unselectedTextColor = drawerContentColor
+                        )
+                        NavigationDrawerItem(
+                            icon = { Icon(Icons.Outlined.History, "Historial de Traducciones") },
+                            label = { Text("Historial de Traducciones") },
+                            selected = false,
+                            onClick = { onHistoryClick(); scope.launch { drawerState.close() } },
+                            colors = navDrawerItemColors
+                        )
+                        NavigationDrawerItem(
+                            icon = { Icon(Icons.AutoMirrored.Filled.SpeakerNotes, "Texto a Señas") },
+                            label = { Text("Texto a Señas") },
+                            selected = false,
+                            onClick = { onTextActionClick(); scope.launch { drawerState.close() } },
+                            colors = navDrawerItemColors
+                        )
+                        NavigationDrawerItem(
+                            icon = { Icon(Icons.Outlined.PhotoCamera, "Señas a Texto") },
+                            label = { Text("Señas a Texto") },
+                            selected = false,
+                            onClick = { onCameraActionClick(); scope.launch { drawerState.close() } },
+                            colors = navDrawerItemColors
+                        )
+                    }
+                    Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        val navDrawerItemColors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = drawerContentColor,
+                            unselectedTextColor = drawerContentColor
+                        )
+                        NavigationDrawerItem(
+                            icon = { Icon(Icons.Outlined.ManageAccounts, "Cambiar cuenta") },
+                            label = { Text("Cambiar cuenta") },
+                            selected = false,
+                            onClick = onLogout,
+                            colors = navDrawerItemColors
+                        )
+                        NavigationDrawerItem(
+                            icon = { Icon(Icons.AutoMirrored.Filled.Logout, "Cerrar Sesión") },
+                            label = { Text("Cerrar Sesión") },
+                            selected = false,
+                            onClick = onLogout,
+                            colors = navDrawerItemColors
+                        )
+                    }
                 }
             }
         }
     ) {
         Scaffold(
             topBar = {
-                // 3. Barra superior con padding unificado
                 TopAppBar(
-                    title = { }, // El título se mueve al navigationIcon
+                    title = { },
                     navigationIcon = {
                         Row(
                             modifier = Modifier.padding(start = 16.dp, top = 16.dp),
@@ -187,7 +204,9 @@ private fun HomeScreenContent(
             .padding(16.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()), // <-- CONTENIDO DESPLAZABLE
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
