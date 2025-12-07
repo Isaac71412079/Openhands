@@ -27,6 +27,7 @@ class SignCameraViewModel(
     // Configura tu URL de ngrok aquí
     private val SERVER_URL = "http://54.172.43.102:5000"
 
+
     init {
         // Iniciar la conexión SocketIO
         repository.connectSocket(SERVER_URL)
