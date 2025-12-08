@@ -1,6 +1,5 @@
 package com.example.openhands.features.auth.presentation
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -9,7 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// 1. Estado de UI más detallado
+// 1. Estado de UI
 data class RegisterUiState(
     val isLoading: Boolean = false,
     val success: Boolean = false,
@@ -19,20 +18,21 @@ data class RegisterUiState(
     val genericError: String? = null
 )
 
-class RegisterViewModel : ViewModel() {
+// 2. CAMBIO: Recibimos auth y db por constructor
+class RegisterViewModel(
+    private val auth: FirebaseAuth,
+    private val db: FirebaseFirestore
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
-
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
 
     fun registerUser(
         email: String,
         password: String,
         confirmPassword: String
     ) {
-        // 2. Validar localmente ANTES de llamar a Firebase
+        // Validar localmente ANTES de llamar a Firebase
         if (!validateInputs(email, password, confirmPassword)) {
             return
         }
@@ -53,7 +53,6 @@ class RegisterViewModel : ViewModel() {
                     .addOnFailureListener { _uiState.value = RegisterUiState(genericError = "Error al guardar los datos.") }
             }
             .addOnFailureListener { exception ->
-                // 3. Traducir errores de Firebase
                 val errorMessage = when (exception) {
                     is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es incorrecto."
                     is FirebaseAuthUserCollisionException -> "El correo electrónico ya está en uso."
@@ -68,7 +67,10 @@ class RegisterViewModel : ViewModel() {
         var passwordError: String? = null
         var confirmPasswordError: String? = null
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        // CAMBIO: Usamos Regex de Kotlin en lugar de Patterns de Android para evitar errores en Tests
+        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+
+        if (!emailRegex.matches(email)) {
             emailError = "Correo electrónico no válido."
         }
 

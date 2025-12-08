@@ -3,8 +3,9 @@ package com.example.openhands.features.login.data.repository
 import com.example.openhands.features.login.data.LoginDataStore
 import com.example.openhands.features.login.domain.model.LoginResult
 import com.example.openhands.features.login.domain.repository.ILoginRepository
-import kotlinx.coroutines.delay
+import com.google.firebase.FirebaseNetworkException // Importante importar esto
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import kotlinx.coroutines.tasks.await
 
 class LoginRepository(
@@ -20,7 +21,23 @@ class LoginRepository(
             LoginResult.Success
         } catch (e: Exception) {
             e.printStackTrace()
-            LoginResult.Failure.InvalidCredentials
+
+            // AQUÍ ESTÁ LA MAGIA DEL PASO 5:
+            // Diferenciamos qué tipo de error ocurrió
+            when (e) {
+                is FirebaseNetworkException -> {
+                    // Esto ocurre cuando no hay internet o no se alcanza el servidor
+                    LoginResult.Failure.Unknown("No hay conexión a internet. Verifique su red.")
+                }
+                is FirebaseAuthInvalidCredentialsException -> {
+                    // Contraseña o correo malformado/erróneo
+                    LoginResult.Failure.InvalidCredentials
+                }
+                else -> {
+                    // Cualquier otro error
+                    LoginResult.Failure.Unknown(e.message ?: "Ocurrió un error inesperado.")
+                }
+            }
         }
     }
 

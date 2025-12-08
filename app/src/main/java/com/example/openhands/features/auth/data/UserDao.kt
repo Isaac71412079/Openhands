@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 
 @Dao
-interface UserDao {
+interface  UserDao {
     @Insert
     suspend fun insertUser(user: User)
 
