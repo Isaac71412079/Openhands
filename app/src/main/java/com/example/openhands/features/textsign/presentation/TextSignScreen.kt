@@ -162,7 +162,7 @@ fun TextSignScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Explorar más idiomas en Sign.mt",
+                        text = "Explorar en Sign.mt",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
