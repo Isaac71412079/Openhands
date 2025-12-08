@@ -1,8 +1,8 @@
 package com.example.openhands.features.auth.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
@@ -49,48 +49,39 @@ fun RegisterScreen(
     onNavigateBack: () -> Unit,
     viewModel: RegisterViewModel = koinViewModel()
 ) {
-    // Animación de entrada
-    var isVisible by remember { mutableStateOf(false) }
+    var startAnimation by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        isVisible = true
+        startAnimation = true
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF152C58)) // Mismo fondo que Login para continuidad
+            .background(Color(0xFF152C58))
     ) {
-
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = slideInVertically(
-                initialOffsetY = { 100 },
-                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
-            ) + fadeIn(animationSpec = tween(800))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 28.dp, vertical = 64.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 28.dp, vertical = 64.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Logo más pequeño para dar espacio al formulario largo
+            // ELEMENTO 0: LOGO
+            StaggeredAnimate(visible = startAnimation, index = 0) {
                 Image(
                     painter = painterResource(id = R.drawable.openhands),
                     contentDescription = "Logo Openhands",
                     modifier = Modifier.size(100.dp)
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                RegisterContent(viewModel, onRegisterSuccess)
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            RegisterContent(viewModel, onRegisterSuccess, startAnimation)
         }
 
-        // Botón de volver atrás flotante
         IconButton(
             onClick = onNavigateBack,
             modifier = Modifier
@@ -111,7 +102,8 @@ fun RegisterScreen(
 @Composable
 private fun RegisterContent(
     viewModel: RegisterViewModel,
-    onRegisterSuccess: () -> Unit
+    onRegisterSuccess: () -> Unit,
+    startAnimation: Boolean
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -121,142 +113,163 @@ private fun RegisterContent(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) showSuccessDialog = true
+    }
+
+    LaunchedEffect(showSuccessDialog) {
+        if (!showSuccessDialog && uiState.success) {
+            delay(200)
+            onRegisterSuccess()
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.widthIn(max = 380.dp)
     ) {
-        Text(
-            text = "Crear Cuenta",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
-        Text(
-            text = "Únete a la comunidad OpenHands",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.7f)
-        )
+        // ELEMENTO 1: TEXTOS
+        StaggeredAnimate(visible = startAnimation, index = 1) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Crear Cuenta",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Únete a la comunidad OpenHands",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // INPUT: EMAIL
-        RegisterTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = "Correo electrónico",
-            icon = Icons.Default.Email,
-            keyboardType = KeyboardType.Email,
-            isError = uiState.emailError != null,
-            errorMessage = uiState.emailError
-        )
+        // ELEMENTO 2: EMAIL
+        StaggeredAnimate(visible = startAnimation, index = 2) {
+            RegisterTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = "Correo electrónico",
+                icon = Icons.Default.Email,
+                keyboardType = KeyboardType.Email,
+                isError = uiState.emailError != null,
+                errorMessage = uiState.emailError
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // INPUT: PASSWORD
-        RegisterTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = "Contraseña",
-            icon = Icons.Default.Lock,
-            keyboardType = KeyboardType.Password,
-            isError = uiState.passwordError != null,
-            errorMessage = uiState.passwordError,
-            isPassword = true,
-            passwordVisible = passwordVisible,
-            onPasswordVisibilityChange = { passwordVisible = !passwordVisible }
-        )
+        // ELEMENTO 3: PASSWORD
+        StaggeredAnimate(visible = startAnimation, index = 3) {
+            RegisterTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = "Contraseña",
+                icon = Icons.Default.Lock,
+                keyboardType = KeyboardType.Password,
+                isError = uiState.passwordError != null,
+                errorMessage = uiState.passwordError,
+                isPassword = true,
+                passwordVisible = passwordVisible,
+                onPasswordVisibilityChange = { passwordVisible = !passwordVisible }
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // INPUT: CONFIRM PASSWORD
-        RegisterTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = "Confirmar contraseña",
-            icon = Icons.Default.LockReset, // Icono diferente para distinguir
-            keyboardType = KeyboardType.Password,
-            isError = uiState.confirmPasswordError != null,
-            errorMessage = uiState.confirmPasswordError,
-            isPassword = true,
-            passwordVisible = confirmPasswordVisible,
-            onPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible }
-        )
+        // ELEMENTO 4: CONFIRM PASSWORD
+        StaggeredAnimate(visible = startAnimation, index = 4) {
+            RegisterTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = "Confirmar contraseña",
+                icon = Icons.Default.LockReset,
+                keyboardType = KeyboardType.Password,
+                isError = uiState.confirmPasswordError != null,
+                errorMessage = uiState.confirmPasswordError,
+                isPassword = true,
+                passwordVisible = confirmPasswordVisible,
+                onPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible }
+            )
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // BOTÓN REGISTRO (GRADIENTE)
-        val buttonBrush = Brush.horizontalGradient(
-            colors = listOf(Color(0xFF1F9EBB), Color(0xFF33A1C9))
-        )
+        // ELEMENTO 5: BOTON
+        StaggeredAnimate(visible = startAnimation, index = 5) {
+            val buttonBrush = Brush.horizontalGradient(
+                colors = listOf(Color(0xFF1F9EBB), Color(0xFF33A1C9))
+            )
 
-        Button(
-            onClick = { viewModel.registerUser(email, password, confirmPassword) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(buttonBrush, RoundedCornerShape(50)),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-            contentPadding = PaddingValues(),
-            enabled = !uiState.isLoading
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            Button(
+                onClick = { viewModel.registerUser(email, password, confirmPassword) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(buttonBrush, RoundedCornerShape(50)),
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues(),
+                enabled = !uiState.isLoading
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = "Registrarse",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(text = "Registrarse", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
             }
         }
 
-        // Error Genérico
         uiState.genericError?.let {
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFFF6B6B),
-                modifier = Modifier
-                    .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
-                    .padding(8.dp)
-            )
+            Text(text = it, style = MaterialTheme.typography.bodySmall, color = Color(0xFFFF6B6B), modifier = Modifier.background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp)).padding(8.dp))
         }
 
-        // Diálogo de Éxito
-        if (uiState.success) {
-            RegisterSuccessDialog(onRegisterSuccess)
+        if (showSuccessDialog) {
+            RegisterSuccessDialog(onDismiss = { showSuccessDialog = false })
         }
     }
 }
 
-// Componente de Input Reutilizable (Estilo Idéntico al Login)
+// Helper duplicado aquí si RegisterScreen está en otro paquete,
+// o hazlo público en un archivo utils para compartir.
 @Composable
-private fun RegisterTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    icon: ImageVector,
-    keyboardType: KeyboardType,
-    isError: Boolean,
-    errorMessage: String?,
-    isPassword: Boolean = false,
-    passwordVisible: Boolean = false,
-    onPasswordVisibilityChange: () -> Unit = {}
+private fun StaggeredAnimate(
+    visible: Boolean,
+    index: Int,
+    content: @Composable () -> Unit
 ) {
-    val errorColor = Color(0xFFFF6B6B)
+    // Para Registro, aumentamos un poco el delay porque hay más campos
+    val delay = index * 80
 
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            initialOffsetY = { 150 } // Un poco más de recorrido para dramatismo
+        ) + fadeIn(
+            animationSpec = spring(stiffness = Spring.StiffnessLow)
+        )
+    ) {
+        content()
+    }
+}
+
+// ... Mantén RegisterTextField y RegisterSuccessDialog como estaban ...
+@Composable
+private fun RegisterTextField(value: String, onValueChange: (String) -> Unit, label: String, icon: ImageVector, keyboardType: KeyboardType, isError: Boolean, errorMessage: String?, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordVisibilityChange: () -> Unit = {}) {
+    // ... Tu código de TextField existente ...
+    val errorColor = Color(0xFFFF6B6B)
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = value,
@@ -270,102 +283,27 @@ private fun RegisterTextField(
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             isError = isError,
             visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-            trailingIcon = if (isPassword) {
-                {
-                    IconButton(onClick = onPasswordVisibilityChange) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = "Toggle password",
-                            tint = Color.White.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            } else null,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF33A1C9),
-                unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                focusedLabelColor = Color(0xFF33A1C9),
-                unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
-                cursorColor = Color.White,
-                errorBorderColor = errorColor,
-                errorLabelColor = errorColor,
-                focusedContainerColor = Color.White.copy(alpha = 0.05f),
-                unfocusedContainerColor = Color.White.copy(alpha = 0.05f)
-            )
+            trailingIcon = if (isPassword) { { IconButton(onClick = onPasswordVisibilityChange) { Icon(if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility, null, tint = Color.White.copy(alpha = 0.7f)) } } } else null,
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFF33A1C9), unfocusedBorderColor = Color.White.copy(alpha = 0.3f), focusedLabelColor = Color(0xFF33A1C9), unfocusedLabelColor = Color.White.copy(alpha = 0.5f), cursorColor = Color.White, errorBorderColor = errorColor, errorLabelColor = errorColor, focusedContainerColor = Color.White.copy(alpha = 0.05f), unfocusedContainerColor = Color.White.copy(alpha = 0.05f))
         )
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage,
-                color = errorColor,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-            )
-        }
+        if (errorMessage != null) { Text(text = errorMessage, color = errorColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 8.dp, top = 4.dp)) }
     }
 }
 
 @Composable
-private fun RegisterSuccessDialog(onSuccess: () -> Unit) {
-    // Mismo degradado premium
-    val successGradientBrush = Brush.linearGradient(
-        colors = listOf(Color(0xFF33A1C9), Color(0xFF1F9EBB))
-    )
-
+private fun RegisterSuccessDialog(onDismiss: () -> Unit) {
+    // ... Tu código de Dialog existente ...
+    val successGradientBrush = Brush.linearGradient(colors = listOf(Color(0xFF33A1C9), Color(0xFF1F9EBB)))
     Dialog(onDismissRequest = {}) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = Color(0xFF152C58),
-            border = BorderStroke(1.5.dp, Color(0xFF33A1C9).copy(alpha = 0.5f)),
-            shadowElevation = 10.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .graphicsLayer(alpha = 0.99f)
-                        .drawWithCache {
-                            onDrawWithContent {
-                                drawContent()
-                                drawRect(
-                                    brush = successGradientBrush,
-                                    blendMode = BlendMode.SrcAtop
-                                )
-                            }
-                        }
-                )
-
+        Surface(shape = RoundedCornerShape(28.dp), color = Color(0xFF152C58), border = BorderStroke(1.5.dp, Color(0xFF33A1C9).copy(alpha = 0.5f)), shadowElevation = 10.dp) {
+            Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(80.dp).graphicsLayer(alpha = 0.99f).drawWithCache { onDrawWithContent { drawContent(); drawRect(brush = successGradientBrush, blendMode = BlendMode.SrcAtop) } })
                 Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "¡Cuenta Creada!",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-
+                Text(text = "¡Cuenta Creada!", style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontWeight = FontWeight.Bold), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Tu registro se completó con éxito",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White.copy(alpha = 0.7f)
-                    ),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
+                Text(text = "Tu registro se completó con éxito", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.7f)), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
-
-    LaunchedEffect(Unit) {
-        delay(1500L)
-        onSuccess()
-    }
+    LaunchedEffect(Unit) { delay(1500L); onDismiss() }
 }

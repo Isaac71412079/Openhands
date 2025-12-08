@@ -1,7 +1,9 @@
 package com.example.openhands.features.textsign.presentation
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -10,18 +12,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.PlayCircleFilled
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.openhands.R
 import org.koin.androidx.compose.koinViewModel
 
@@ -34,144 +40,202 @@ fun TextSignScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // Fondo con degradado sutil para dar profundidad
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(Color(0xFF152C58), Color(0xFF0F1E3B))
+    )
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { },
+            CenterAlignedTopAppBar( // Título centrado se ve mejor
+                title = {
+                    Text(
+                        "Traductor LSB",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    Row(modifier = Modifier.padding(start = 16.dp, top = 16.dp)) {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .background(Color.White.copy(alpha = 0.1f), CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.White
+                        )
                     }
                 },
                 actions = {
+                    // Logo pequeño y sutil
                     Image(
                         painter = painterResource(id = R.drawable.openhands),
                         contentDescription = "Logo",
                         modifier = Modifier
                             .padding(end = 16.dp)
-                            .size(40.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
         },
-        containerColor = Color(0xFF152C58),
+        containerColor = Color.Transparent, // Importante para ver el degradado del Box
         bottomBar = {
-            BottomInputBar(viewModel, keyboardController)
+            BottomInputArea(viewModel, keyboardController)
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(backgroundBrush)
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Texto a Señas LSB",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 1. Cambiar aspectRatio por una altura fija de 400.dp
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp) // <-- Altura fija
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFF5F5F5)),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp), // Padding lateral más limpio
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val currentVideoQueue = viewModel.videoQueue
-                if (currentVideoQueue.isEmpty()) {
-                    VideoPlaceholder()
-                } else {
-                    VideoPlayer(
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Subtítulo descriptivo
+                Text(
+                    text = "Escribe texto para visualizar la seña",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // --- CONTENEDOR DE VIDEO (Estilo Pantalla de Cine) ---
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(420.dp), // Un poco más alto para mejor vista
+                    shape = RoundedCornerShape(32.dp), // Bordes muy redondeados
+                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Black)
+                ) {
+                    Box(
                         modifier = Modifier.fillMaxSize(),
-                        videoQueue = currentVideoQueue
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val currentVideoQueue = viewModel.videoQueue
+                        if (currentVideoQueue.isEmpty()) {
+                            VideoPlaceholder()
+                        } else {
+                            VideoPlayer(
+                                modifier = Modifier.fillMaxSize(),
+                                videoQueue = currentVideoQueue
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // --- BOTÓN MÁS IDIOMAS (Estilo Píldora Elegante) ---
+                OutlinedButton(
+                    onClick = onNavigateToMoreLanguages,
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, Color(0xFFF0E8FF).copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFF0E8FF)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Translate,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Explorar más idiomas en Sign.mt",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
+
+                Spacer(modifier = Modifier.height(24.dp)) // Espacio final
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = onNavigateToMoreLanguages,
-                modifier = Modifier.fillMaxWidth(0.8f),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF0E8FF),
-                    contentColor = Color(0xFF152C58)
-                )
-            ) {
-                Text(
-                    text = "+ Más idiomas",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun BottomInputBar(viewModel: TextSignViewModel, keyboardController: Any?) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF152C58))
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun BottomInputArea(viewModel: TextSignViewModel, keyboardController: Any?) {
+    // Panel inferior con un color ligeramente diferente para separarlo visualmente
+    Surface(
+        color = Color(0xFF0F1E3B), // Un tono más oscuro que el fondo
+        shadowElevation = 16.dp,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
-        OutlinedTextField(
-            value = viewModel.inputText,
-            onValueChange = viewModel::onTextChanged,
-            modifier = Modifier.weight(1f),
-            placeholder = { Text("Ingrese Texto...") },
-            shape = RoundedCornerShape(20.dp),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                cursorColor = Color(0xFF152C58),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-            )
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        IconButton(
-            onClick = {
-                viewModel.onTranslateClicked()
-                (keyboardController as? androidx.compose.ui.platform.SoftwareKeyboardController)?.hide()
-            },
+        Row(
             modifier = Modifier
-                .size(56.dp)
-                .background(Color(0xFFF0E8FF), CircleShape)
+                .fillMaxWidth()
+                .padding(16.dp)
+                .navigationBarsPadding(), // Respetar gestos del sistema
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Traducir",
-                tint = Color(0xFF152C58)
+            // Input tipo "Chat"
+            TextField(
+                value = viewModel.inputText,
+                onValueChange = viewModel::onTextChanged,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp), // Altura cómoda
+                placeholder = {
+                    Text(
+                        "Escribe aquí...",
+                        color = Color.Gray
+                    )
+                },
+                shape = RoundedCornerShape(50), // Completamente redondo
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    cursorColor = Color(0xFF152C58),
+                    // Quitar la línea de abajo fea por defecto
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                )
             )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Botón de Enviar Flotante
+            FloatingActionButton(
+                onClick = {
+                    viewModel.onTranslateClicked()
+                    (keyboardController as? androidx.compose.ui.platform.SoftwareKeyboardController)?.hide()
+                },
+                containerColor = Color(0xFFF0E8FF), // Color de acento claro
+                contentColor = Color(0xFF152C58), // Icono oscuro
+                shape = CircleShape,
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Traducir",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }
@@ -180,18 +244,42 @@ private fun BottomInputBar(viewModel: TextSignViewModel, keyboardController: Any
 private fun VideoPlaceholder() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(Color(0xFF2C4A7E), Color(0xFF000000))
+                )
+            )
     ) {
-        Icon(
-            imageVector = Icons.Filled.PlayCircleOutline,
-            contentDescription = "Placeholder de video",
-            modifier = Modifier.size(80.dp),
-            tint = Color.LightGray
+        // Círculo decorativo detrás del icono
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(100.dp)
+                .background(Color.White.copy(alpha = 0.1f), CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PlayCircleFilled,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = Color(0xFFF0E8FF).copy(alpha = 0.8f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Esperando texto...",
+            color = Color.White.copy(alpha = 0.9f),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "El video de la seña aparecerá aquí",
-            color = Color.Gray,
-            textAlign = TextAlign.Center
+            color = Color.White.copy(alpha = 0.5f),
+            style = MaterialTheme.typography.bodySmall
         )
     }
 }

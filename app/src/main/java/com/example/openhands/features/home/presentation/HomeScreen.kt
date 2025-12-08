@@ -2,25 +2,27 @@ package com.example.openhands.features.home.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.automirrored.filled.SpeakerNotes
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.ManageAccounts
-import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,276 +41,296 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val drawerBackgroundColor = Color(0xFFF0E8FF)
+    // Colores del Drawer
+    val drawerBackgroundColor = Color(0xFFF9F9FF)
     val drawerContentColor = Color(0xFF152C58)
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        scrimColor = Color.Transparent,
+        scrimColor = Color.Black.copy(alpha = 0.6f),
         drawerContent = {
             ModalDrawerSheet(
                 drawerContainerColor = drawerBackgroundColor,
-                drawerContentColor = drawerContentColor
+                drawerContentColor = drawerContentColor,
+                modifier = Modifier.width(300.dp)
             ) {
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = { scope.launch { drawerState.close() } }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Cerrar menú",
-                                tint = drawerContentColor,
-                                modifier = Modifier.size(32.dp)
+                // --- HEADER DEL DRAWER ---
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFF152C58), Color(0xFF2C4A7E))
+                            )
+                        ),
+                    contentAlignment = Alignment.BottomStart
+                ) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White,
+                            modifier = Modifier.size(64.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.openhands),
+                                contentDescription = "Logo",
+                                modifier = Modifier.padding(8.dp),
+                                contentScale = ContentScale.Fit
                             )
                         }
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Openhands",
+                            text = "OpenHands",
                             style = MaterialTheme.typography.titleLarge,
-                            color = drawerContentColor,
+                            color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
+                        Text(
+                            text = userEmail,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 1
+                        )
                     }
+                }
 
-                    Image(
-                        painter = painterResource(id = R.drawable.openhands),
-                        contentDescription = "Logo de Openhands",
-                        modifier = Modifier
-                            .height(120.dp)
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .clip(RoundedCornerShape(20.dp))
+                // --- ITEMS DEL MENU ---
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 16.dp, horizontal = 12.dp)
+                ) {
+                    DrawerItem(
+                        icon = Icons.Outlined.History,
+                        label = "Historial de Traducciones",
+                        onClick = { onHistoryClick(); scope.launch { drawerState.close() } }
                     )
 
-                    Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Gray.copy(alpha = 0.1f))
 
                     Text(
-                        text = userEmail,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = drawerContentColor.copy(alpha = 0.7f),
-                        maxLines = 1
+                        text = "Configuración",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
                     )
 
-                    Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
-
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        val navDrawerItemColors = NavigationDrawerItemDefaults.colors(
-                            unselectedIconColor = drawerContentColor,
-                            unselectedTextColor = drawerContentColor
-                        )
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.Outlined.History, "Historial de Traducciones") },
-                            label = { Text("Historial de Traducciones") },
-                            selected = false,
-                            onClick = { onHistoryClick(); scope.launch { drawerState.close() } },
-                            colors = navDrawerItemColors
-                        )
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.AutoMirrored.Filled.SpeakerNotes, "Texto a Señas") },
-                            label = { Text("Texto a Señas") },
-                            selected = false,
-                            onClick = { onTextActionClick(); scope.launch { drawerState.close() } },
-                            colors = navDrawerItemColors
-                        )
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.Outlined.PhotoCamera, "Señas a Texto") },
-                            label = { Text("Señas a Texto") },
-                            selected = false,
-                            onClick = { onCameraActionClick(); scope.launch { drawerState.close() } },
-                            colors = navDrawerItemColors
-                        )
-                    }
-                    Divider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = drawerContentColor.copy(alpha = 0.2f))
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        val navDrawerItemColors = NavigationDrawerItemDefaults.colors(
-                            unselectedIconColor = drawerContentColor,
-                            unselectedTextColor = drawerContentColor
-                        )
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.Outlined.ManageAccounts, "Cambiar cuenta") },
-                            label = { Text("Cambiar cuenta") },
-                            selected = false,
-                            onClick = onLogout,
-                            colors = navDrawerItemColors
-                        )
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.AutoMirrored.Filled.Logout, "Cerrar Sesión") },
-                            label = { Text("Cerrar Sesión") },
-                            selected = false,
-                            onClick = onLogout,
-                            colors = navDrawerItemColors
-                        )
-                    }
+                    DrawerItem(
+                        icon = Icons.Outlined.ManageAccounts,
+                        label = "Mi Cuenta",
+                        onClick = { onLogout() }
+                    )
+                    DrawerItem(
+                        icon = Icons.AutoMirrored.Filled.Logout,
+                        label = "Cerrar Sesión",
+                        onClick = onLogout,
+                        isDestructive = true
+                    )
                 }
             }
         }
     ) {
+        val mainBackgroundBrush = Brush.verticalGradient(
+            colors = listOf(Color(0xFF152C58), Color(0xFF0F2042))
+        )
+
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { },
                     navigationIcon = {
-                        Row(
-                            modifier = Modifier.padding(start = 16.dp, top= 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        IconButton(
+                            onClick = { scope.launch { drawerState.open() } },
+                            modifier = Modifier.padding(8.dp)
                         ) {
-                            IconButton(
-                                onClick = {
-                                    scope.launch {
-                                        if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Menu, "Abrir/Cerrar menú",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(32.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text("Openhands", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                            Icon(
+                                Icons.Default.Menu, "Menú",
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF152C58))
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            },
+            containerColor = Color.Transparent
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(mainBackgroundBrush)
+                    .padding(paddingValues)
+            ) {
+                HomeScreenContent(
+                    userEmail = userEmail,
+                    onTextActionClick = onTextActionClick,
+                    onCameraActionClick = onCameraActionClick
                 )
             }
-        ) {
-            HomeScreenContent(
-                modifier = Modifier.padding(it),
-                onTextActionClick = onTextActionClick,
-                onCameraActionClick = onCameraActionClick
-            )
         }
     }
+}
+
+@Composable
+private fun DrawerItem(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    isDestructive: Boolean = false
+) {
+    val color = if (isDestructive) Color(0xFFFF6B6B) else Color(0xFF152C58)
+
+    NavigationDrawerItem(
+        icon = { Icon(icon, null, tint = color) },
+        label = { Text(label, fontWeight = if(isDestructive) FontWeight.Bold else FontWeight.Normal) },
+        selected = false,
+        onClick = onClick,
+        colors = NavigationDrawerItemDefaults.colors(
+            unselectedContainerColor = Color.Transparent,
+            unselectedTextColor = color
+        ),
+        modifier = Modifier.padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp)
+    )
 }
 
 @Composable
 private fun HomeScreenContent(
-    modifier: Modifier = Modifier,
+    userEmail: String,
     onTextActionClick: () -> Unit,
     onCameraActionClick: () -> Unit
 ) {
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF152C58))
-            .padding(16.dp)
-    ) {
-        if (maxWidth > maxHeight) {
-            LandscapeHomeScreen(onTextActionClick, onCameraActionClick)
-        } else {
-            PortraitHomeScreen(onTextActionClick, onCameraActionClick)
-        }
+    val userName = remember(userEmail) {
+        userEmail.substringBefore("@").replaceFirstChar { it.uppercase() }
     }
-}
 
-@Composable
-private fun PortraitHomeScreen(
-    onTextActionClick: () -> Unit,
-    onCameraActionClick: () -> Unit
-) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(horizontal = 24.dp)
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.Start
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.openhands),
-            contentDescription = "Logo de OpenHands",
-            modifier = Modifier.size(150.dp).clip(RoundedCornerShape(24.dp))
-        )
-        Spacer(modifier = Modifier.height(24.dp))
+        // 1. AUMENTO DE ESPACIO SUPERIOR (Antes 16.dp -> Ahora 32.dp)
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // --- SALUDO (Sin la mano 👋) ---
         Text(
-            text = "Seleccione Una Acción:",
+            text = "Hola, $userName",
             style = MaterialTheme.typography.headlineMedium,
             color = Color.White,
-            modifier = Modifier.padding(bottom = 40.dp),
             fontWeight = FontWeight.Bold
         )
-        ActionButton(
+        Text(
+            text = "¿Qué deseas traducir hoy?",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White.copy(alpha = 0.7f)
+        )
+
+        // 2. AUMENTO DE ESPACIO ENTRE TEXTO Y CARTAS (Antes 40.dp -> Ahora 50.dp)
+        Spacer(modifier = Modifier.height(50.dp))
+
+        // --- TARJETAS ---
+        ActionCard(
+            title = "Texto a Señas",
+            subtitle = "Escribe y traduce a LSB",
             iconResId = R.drawable.text,
-            contentDescription = "Texto a Señas",
+            gradientColors = listOf(Color(0xFF8E2DE2), Color(0xFF4A00E0)),
             onClick = onTextActionClick
         )
+
+        // 3. AUMENTO DE ESPACIO ENTRE CARTAS (Antes 24.dp -> Ahora 32.dp)
         Spacer(modifier = Modifier.height(32.dp))
-        ActionButton(
+
+        ActionCard(
+            title = "Señas a Texto",
+            subtitle = "Usa la cámara para traducir",
             iconResId = R.drawable.camera,
-            contentDescription = "Señas a Texto",
+            gradientColors = listOf(Color(0xFF11998E), Color(0xFF38EF7D)),
             onClick = onCameraActionClick
         )
+
+        // Espacio final para asegurar scroll cómodo
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
-private fun LandscapeHomeScreen(
-    onTextActionClick: () -> Unit,
-    onCameraActionClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally // 1. Centrar todo el contenido
-    ) {
-        Text(
-            text = "Seleccione Una Acción:",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier // 2. Quitar el padding para que se centre correctamente
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActionButton(
-                iconResId = R.drawable.text,
-                contentDescription = "Texto a Señas",
-                onClick = onTextActionClick
-            )
-            ActionButton(
-                iconResId = R.drawable.camera,
-                contentDescription = "Señas a Texto",
-                onClick = onCameraActionClick
-            )
-        }
-    }
-}
-
-@Composable
-private fun ActionButton(
+private fun ActionCard(
+    title: String,
+    subtitle: String,
     iconResId: Int,
-    contentDescription: String,
+    gradientColors: List<Color>,
     onClick: () -> Unit
 ) {
-    val buttonShape = RoundedCornerShape(24.dp)
-    Box(
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
-            .size(180.dp)
-            .border(
-                width = 2.dp,
-                color = Color(0xFF33A1C9),
-                shape = buttonShape
-            )
-            .clip(buttonShape)
-            .background(Color(0xFF2C4A7E))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .height(160.dp)
     ) {
-        Image(
-            painter = painterResource(id = iconResId),
-            contentDescription = contentDescription,
-            modifier = Modifier.size(100.dp)
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.linearGradient(gradientColors))
+        ) {
+            Box(
+                modifier = Modifier
+                    .offset(x = 20.dp, y = (-20).dp)
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.1f))
+                    .align(Alignment.TopEnd)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Surface(
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Text(
+                            text = "COMENZAR",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+
+                Image(
+                    painter = painterResource(id = iconResId),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .graphicsLayer { rotationZ = 10f }
+                )
+            }
+        }
     }
 }
