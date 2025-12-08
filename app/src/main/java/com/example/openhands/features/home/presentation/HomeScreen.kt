@@ -2,6 +2,7 @@ package com.example.openhands.features.home.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -116,11 +117,8 @@ fun HomeScreen(
                         modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
                     )
 
-                    DrawerItem(
-                        icon = Icons.Outlined.ManageAccounts,
-                        label = "Mi Cuenta",
-                        onClick = { onLogout() }
-                    )
+                    // CAMBIO: Se eliminó el item "Mi Cuenta"
+
                     DrawerItem(
                         icon = Icons.AutoMirrored.Filled.Logout,
                         label = "Cerrar Sesión",
@@ -212,10 +210,9 @@ private fun HomeScreenContent(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
-        // 1. AUMENTO DE ESPACIO SUPERIOR (Antes 16.dp -> Ahora 32.dp)
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- SALUDO (Sin la mano 👋) ---
+        // --- SALUDO ---
         Text(
             text = "Hola, $userName",
             style = MaterialTheme.typography.headlineMedium,
@@ -228,7 +225,6 @@ private fun HomeScreenContent(
             color = Color.White.copy(alpha = 0.7f)
         )
 
-        // 2. AUMENTO DE ESPACIO ENTRE TEXTO Y CARTAS (Antes 40.dp -> Ahora 50.dp)
         Spacer(modifier = Modifier.height(50.dp))
 
         // --- TARJETAS ---
@@ -240,7 +236,6 @@ private fun HomeScreenContent(
             onClick = onTextActionClick
         )
 
-        // 3. AUMENTO DE ESPACIO ENTRE CARTAS (Antes 24.dp -> Ahora 32.dp)
         Spacer(modifier = Modifier.height(32.dp))
 
         ActionCard(
@@ -251,7 +246,6 @@ private fun HomeScreenContent(
             onClick = onCameraActionClick
         )
 
-        // Espacio final para asegurar scroll cómodo
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
@@ -270,7 +264,8 @@ private fun ActionCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp)
+
+            .heightIn(min = 160.dp)
     ) {
         Box(
             modifier = Modifier
