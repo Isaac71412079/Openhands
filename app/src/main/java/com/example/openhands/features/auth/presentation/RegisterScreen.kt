@@ -32,35 +32,39 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.openhands.R
 import kotlinx.coroutines.delay
+// 1. AGREGA ESTE IMPORT DE KOIN:
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
-    viewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    // 2. CAMBIA ESTA LÍNEA:
+    // Antes: viewModel: RegisterViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    // AHORA (Usa Koin para inyectar auth y db):
+    viewModel: RegisterViewModel = koinViewModel()
 ) {
     val gradientBrush = Brush.linearGradient(
         colors = listOf(Color(0xFF867AD2), Color(0xFF453F6C), Color(0xFF2F2C44))
     )
 
+    // ... EL RESTO DEL CÓDIGO SIGUE EXACTAMENTE IGUAL ...
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(gradientBrush)
     ) {
-        // 1. Unificar en una sola disposición centrada y desplazable.
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 28.dp, vertical = 64.dp), // Padding para no pegar al borde
+                .padding(horizontal = 28.dp, vertical = 64.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             RegisterContent(viewModel, onRegisterSuccess)
         }
 
-        // 2. El botón de retroceso se mantiene fijo en la esquina.
         IconButton(
             onClick = onNavigateBack,
             modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
@@ -74,7 +78,6 @@ fun RegisterScreen(
         }
     }
 }
-
 // El contenido del formulario ahora está encapsulado aquí
 @Composable
 private fun RegisterContent(
