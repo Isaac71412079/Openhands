@@ -51,6 +51,8 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-common-ktx") // The key fix
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0")
+
 
     // --- AndroidX & Compose ---
     implementation(libs.androidx.core.ktx)

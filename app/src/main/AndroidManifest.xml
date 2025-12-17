@@ -2,15 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- PERMISOS CORRECTOS -->
+    <!-- PERMISOS DE HARDWARE Y RED -->
     <uses-feature android:name="android.hardware.camera.any" />
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- BORRÉ LA LÍNEA INCORRECTA DE CLEAR_TEXT AQUÍ -->
+    <!-- NUEVO: PERMISO PARA NOTIFICACIONES (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:name=".App"
@@ -35,6 +37,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- NUEVO: REGISTRO DEL SERVICIO DE FIREBASE -->
+        <!-- Asegúrate de haber creado la carpeta 'services' y el archivo MyFirebaseMessagingService -->
+        <service
+            android:name=".services.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- (Opcional) Icono por defecto para notificaciones si no se especifica uno -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/openhands" />
+
     </application>
 
 </manifest>
