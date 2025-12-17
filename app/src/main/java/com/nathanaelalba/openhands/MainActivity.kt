@@ -17,18 +17,37 @@ import com.nathanaelalba.openhands.features.appupdate.domain.AppUpdateConfig
 import com.nathanaelalba.openhands.features.appupdate.presentation.AppUpdateManager
 import com.nathanaelalba.openhands.navigation.AppNavigation
 import com.nathanaelalba.openhands.ui.theme.OpenhandsTheme
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.firebase.auth.ktx.auth
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ---------------------------- Solicitud de permiso de notificaciones (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val requestPermissionLauncher =
+                registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                    if (isGranted) {
+                        Log.d("FCM", "Permiso de notificaciones concedido")
+                        subscribeToDailySignTopic()
+                    } else {
+                        Log.d("FCM", "Permiso de notificaciones denegado")
+                    }
+                }
+
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            // Para Android <13 no se requiere permiso explícito
+            subscribeToDailySignTopic()
+        }
 
         setContent {
             OpenhandsTheme {
@@ -69,6 +88,18 @@ class MainActivity : ComponentActivity() {
         // ----------------------------
         // Verificación de Firebase
         //testFirebaseConfig()
+    }
+
+    // ---------------------------- Suscribirse al topic de Firebase
+    private fun subscribeToDailySignTopic() {
+        FirebaseMessaging.getInstance().subscribeToTopic("daily_sign")
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FCM", "Suscrito al topic daily_sign")
+                } else {
+                    Log.e("FCM", "Error al suscribirse al topic", task.exception)
+                }
+            }
     }
 
     // ---------------------------- Notificación automática de actualización
