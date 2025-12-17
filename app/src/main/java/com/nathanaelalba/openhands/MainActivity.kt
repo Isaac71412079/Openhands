@@ -20,6 +20,7 @@ import com.nathanaelalba.openhands.ui.theme.OpenhandsTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +40,10 @@ class MainActivity : ComponentActivity() {
                 var updateConfig by remember { mutableStateOf<AppUpdateConfig?>(null) }
 
                 LaunchedEffect(Unit) {
+                    //token de firebase
+                    FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                        Log.d("FCM", "TOKEN => $token")
+                    }
                     // 🔹 Usar versión real de la app
                     val currentVersionCode = BuildConfig.VERSION_CODE
                     val config = AppUpdateManager.shouldShowUpdate(currentVersionCode)
