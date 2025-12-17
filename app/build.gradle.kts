@@ -9,15 +9,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.openhands"
+    namespace = "com.nathanaelalba.openhands"
     compileSdk = 36
 
     defaultConfig {
         applicationId = "com.nathanaelalba.openhands"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -40,17 +40,20 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
-    // --- Firebase (Correct Setup) ---
+    // Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-database")
+
+    // Firebase services (KTX)
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-messaging")
-    implementation("com.google.firebase:firebase-common-ktx") // The key fix
+    implementation("com.google.firebase:firebase-config-ktx")
 
     // --- AndroidX & Compose ---
     implementation(libs.androidx.core.ktx)

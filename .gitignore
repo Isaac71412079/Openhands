@@ -1,3 +1,4 @@
+# Android Studio / IntelliJ
 *.iml
 .gradle
 /local.properties
@@ -7,9 +8,29 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
-.DS_Store
+
+# Build outputs
 /build
+*/build
 /captures
 .externalNativeBuild
 .cxx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kotlin
+.kotlin/
+*.log
+
+# Firebase / Node (MUY IMPORTANTE)
+node_modules/
+functions/node_modules/
+.firebase/
+
+# Firebase Functions mal ubicadas (por si acaso)
+app/src/main/java/**/functions/node_modules/
+
+# Local configs
 local.properties
