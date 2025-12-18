@@ -206,22 +206,21 @@ private fun PortraitLayout(
         // 3. Contenido (Texto y Botones)
         // Usamos graphicsLayer para animar opacidad y un ligero desplazamiento
         // Esto es más performante que AnimatedVisibility para cosas simples
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
             modifier = Modifier
-                .padding(top = 24.dp)
+                .fillMaxWidth()
                 .graphicsLayer {
                     alpha = contentAlpha
-                    // Pequeño efecto slide up sutil (20px)
                     translationY = if (expanded) 0f else 50f
-                }
+                },
+            contentAlignment = Alignment.Center
         ) {
-            // Solo renderizamos si ya empezó la expansión para ahorrar recursos
-            if (expanded) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 WelcomeTexts(welcomeMessage)
                 Spacer(modifier = Modifier.height(48.dp))
                 AuthButtons(onLoginClicked, onRegisterClicked)
-                Spacer(modifier = Modifier.height(40.dp))
             }
         }
     }
@@ -285,19 +284,22 @@ private fun LandscapeLayout(
 
 @Composable
 private fun WelcomeTexts(message: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Bienvenido a Openhands",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = Color.LightGray,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
