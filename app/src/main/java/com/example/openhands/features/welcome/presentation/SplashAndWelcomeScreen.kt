@@ -21,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -31,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import com.example.openhands.R
 import com.example.openhands.features.privacy_policy.PrivacyPolicyScreen
 import com.example.openhands.features.privacy_policy.viewmodel.PrivacyPolicyViewModel
+import com.example.openhands.features.settings.data.SettingsDataStore
+import com.example.openhands.features.settings.presentation.SettingsViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
@@ -38,44 +41,46 @@ import org.koin.androidx.compose.koinViewModel
 fun SplashAndWelcomeScreen(
     onLoginClicked: () -> Unit,
     onRegisterClicked: () -> Unit,
+    settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
     val privacyPolicyViewModel: PrivacyPolicyViewModel = koinViewModel()
     val hasAcceptedPrivacyPolicy by privacyPolicyViewModel.hasAcceptedPrivacyPolicy.collectAsState()
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
-    // Estado para controlar el inicio de la animación
     var startAnimation by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
-        // Pausa breve para ver el logo completo (Branding)
         delay(1000)
         startAnimation = true
     }
 
-    val backgroundColor = Color(0xFF152C58)
+    // --- Lógica de Tema --- 
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+    val backgroundBrush = if (useDarkTheme) {
+        SolidColor(Color.Black)
+    } else {
+        SolidColor(Color(0xFF152C58))
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor),
+            .background(backgroundBrush),
         contentAlignment = Alignment.Center
     ) {
-        // BoxWithConstraints es vital para calcular matemáticamente el centro
         BoxWithConstraints {
             val screenHeight = maxHeight
-
-            // Lógica adaptativa (Vertical vs Horizontal)
             if (maxWidth > maxHeight) {
-                LandscapeLayout(startAnimation, onLoginClicked, onRegisterClicked)
+                LandscapeLayout(startAnimation, onLoginClicked, onRegisterClicked, useDarkTheme)
             } else {
-                PortraitLayout(screenHeight, startAnimation, onLoginClicked, onRegisterClicked)
+                PortraitLayout(screenHeight, startAnimation, onLoginClicked, onRegisterClicked, useDarkTheme)
             }
         }
 
-        // Lógica de Política de Privacidad (Aparece sutilmente después de la animación)
         if (startAnimation && !hasAcceptedPrivacyPolicy) {
             var showPolicy by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
-                delay(900) // Sincronizado para aparecer justo cuando el logo termina de subir
+                delay(900) 
                 showPolicy = true
             }
             if(showPolicy) {
@@ -90,44 +95,33 @@ fun SplashAndWelcomeScreen(
 @Composable
 private fun PortraitLayout(
     screenHeight: Dp,
-    expanded: Boolean, // "expanded" significa que estamos en modo Bienvenida (Logo arriba)
+    expanded: Boolean, 
     onLoginClicked: () -> Unit,
-    onRegisterClicked: () -> Unit
+    onRegisterClicked: () -> Unit,
+    useDarkTheme: Boolean
 ) {
-    // --- CONFIGURACIÓN DE ANIMACIÓN PROFESIONAL ---
-    // Usamos 800ms: Es rápido, pero 'FastOutSlowInEasing' hace que frene suave al final.
-    // Esto da la sensación de velocidad sin ser brusco.
     val animDuration = 800
     val animEasing = FastOutSlowInEasing
-
-    // --- CÁLCULOS MATEMÁTICOS ---
     val initialLogoSize = 300.dp
     val finalLogoSize = 200.dp
-
-    // Posición Centro: (AltoPantalla / 2) - (Mitad del Logo)
-    // Esto garantiza que visualmente esté en el centro absoluto al inicio.
     val centerPos = (screenHeight / 2) - (initialLogoSize / 2)
-    val topPos = 60.dp // Margen superior final deseado
+    val topPos = 60.dp 
 
-    // --- ANIMACIONES ---
     val logoSize by animateDpAsState(
         targetValue = if (expanded) finalLogoSize else initialLogoSize,
         animationSpec = tween(animDuration, easing = animEasing),
         label = "LogoSize"
     )
 
-    // Esta es la clave: Animamos la altura de un Spacer invisible.
-    // Al ser un valor de píxel continuo, es imposible que salte.
     val topSpacerHeight by animateDpAsState(
         targetValue = if (expanded) topPos else centerPos,
         animationSpec = tween(animDuration, easing = animEasing),
         label = "TopSpacer"
     )
 
-    // Opacidad y escala para el contenido que entra
     val contentAlpha by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 300), // Retraso ligero para efecto cascada
+        animationSpec = tween(durationMillis = 1000, delayMillis = 300),
         label = "ContentAlpha"
     )
 
@@ -137,13 +131,10 @@ private fun PortraitLayout(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        // TRUCO PRO: Alineamos SIEMPRE arriba. Controlamos la posición con el Spacer.
         verticalArrangement = Arrangement.Top
     ) {
-        // 1. El espaciador dinámico empuja todo hacia abajo o arriba
         Spacer(modifier = Modifier.height(topSpacerHeight))
 
-        // 2. Logo
         Image(
             painter = painterResource(id = R.drawable.openhands),
             contentDescription = "Logo de Openhands",
@@ -151,24 +142,19 @@ private fun PortraitLayout(
             contentScale = ContentScale.Fit
         )
 
-        // 3. Contenido (Texto y Botones)
-        // Usamos graphicsLayer para animar opacidad y un ligero desplazamiento
-        // Esto es más performante que AnimatedVisibility para cosas simples
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .padding(top = 24.dp)
                 .graphicsLayer {
                     alpha = contentAlpha
-                    // Pequeño efecto slide up sutil (20px)
                     translationY = if (expanded) 0f else 50f
                 }
         ) {
-            // Solo renderizamos si ya empezó la expansión para ahorrar recursos
             if (expanded) {
                 WelcomeTexts()
                 Spacer(modifier = Modifier.height(48.dp))
-                AuthButtons(onLoginClicked, onRegisterClicked)
+                AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
                 Spacer(modifier = Modifier.height(40.dp))
             }
         }
@@ -179,7 +165,8 @@ private fun PortraitLayout(
 private fun LandscapeLayout(
     expanded: Boolean,
     onLoginClicked: () -> Unit,
-    onRegisterClicked: () -> Unit
+    onRegisterClicked: () -> Unit,
+    useDarkTheme: Boolean
 ) {
     val animDuration = 1000
 
@@ -208,7 +195,6 @@ private fun LandscapeLayout(
             )
         }
 
-        // Lado Derecho con animación de entrada
         AnimatedVisibility(
             visible = expanded,
             modifier = Modifier.weight(1f),
@@ -222,7 +208,7 @@ private fun LandscapeLayout(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                AuthButtons(onLoginClicked, onRegisterClicked)
+                AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
                 Spacer(modifier = Modifier.height(24.dp))
                 WelcomeTexts()
             }
@@ -252,10 +238,11 @@ private fun WelcomeTexts() {
 @Composable
 private fun AuthButtons(
     onLoginClicked: () -> Unit,
-    onRegisterClicked: () -> Unit
+    onRegisterClicked: () -> Unit,
+    useDarkTheme: Boolean
 ) {
-    val buttonColor = Color(0xFFF0E8FF)
-    val buttonTextColor = Color(0xFF152C58)
+    val buttonColor = if (useDarkTheme) Color.DarkGray else Color(0xFFF0E8FF)
+    val buttonTextColor = if (useDarkTheme) Color.White else Color(0xFF152C58)
 
     Column(modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth()) {
         Button(

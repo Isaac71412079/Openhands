@@ -16,10 +16,9 @@ class SettingsDataStore(context: Context) {
     private val appContext = context.applicationContext
 
     companion object {
-        // 0 = Sistema, 1 = Claro, 2 = Oscuro
+        // 0 = Sistema, 2 = Oscuro (se elimina el 1 = Claro)
         val THEME_PREFERENCE_KEY = intPreferencesKey("theme_preference")
         const val THEME_SYSTEM = 0
-        const val THEME_LIGHT = 1
         const val THEME_DARK = 2
     }
 

@@ -18,26 +18,21 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.outlined.DeleteSweep
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.openhands.features.home.data.model.TranslationHistoryItem
+import com.example.openhands.features.settings.data.SettingsDataStore
+import com.example.openhands.features.settings.presentation.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -46,19 +41,24 @@ import java.util.*
 @Composable
 fun HistoryScreen(
     viewModel: HomeViewModel = koinViewModel(),
+    settingsViewModel: SettingsViewModel = koinViewModel(),
     onNavigateBack: () -> Unit
 ) {
     val historyItems by viewModel.historyState.collectAsState()
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
-    // Fondo degradado coherente con la app
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF152C58), Color(0xFF0F1E3B))
-    )
+    // --- Lógica de Tema --- 
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+    val backgroundBrush = if (useDarkTheme) {
+        SolidColor(Color.Black)
+    } else {
+        Brush.verticalGradient(colors = listOf(Color(0xFF152C58), Color(0xFF0F1E3B)))
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
+                title = { 
                     Text(
                         "Historial",
                         color = Color.White,
@@ -81,13 +81,12 @@ fun HistoryScreen(
                     }
                 },
                 actions = {
-                    // Botón opcional para limpiar todo (puedes conectarlo al ViewModel si quieres)
                     if (historyItems.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.logout() /* O llamar a clearHistory */ }) {
+                        IconButton(onClick = { /* Implementar borrado total */ }) { 
                             Icon(
                                 Icons.Outlined.DeleteSweep,
                                 contentDescription = "Borrar todo",
-                                tint = Color(0xFFFF6B6B) // Rojo suave
+                                tint = Color(0xFFFF6B6B)
                             )
                         }
                     }
@@ -97,7 +96,7 @@ fun HistoryScreen(
                 )
             )
         },
-        containerColor = Color.Transparent // Para ver el gradiente del Box
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -108,13 +107,12 @@ fun HistoryScreen(
             if (historyItems.isEmpty()) {
                 EmptyHistoryState()
             } else {
-                // Lista con animación
                 LazyColumn(
                     contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp, start = 16.dp, end = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     itemsIndexed(historyItems) { index, item ->
-                        AnimatedHistoryItem(item = item, index = index)
+                        AnimatedHistoryItem(item = item, index = index, useDarkTheme = useDarkTheme)
                     }
                 }
             }
@@ -123,11 +121,10 @@ fun HistoryScreen(
 }
 
 @Composable
-fun AnimatedHistoryItem(item: TranslationHistoryItem, index: Int) {
+fun AnimatedHistoryItem(item: TranslationHistoryItem, index: Int, useDarkTheme: Boolean) {
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        // Retraso escalonado para efecto cascada
         isVisible = true
     }
 
@@ -138,32 +135,35 @@ fun AnimatedHistoryItem(item: TranslationHistoryItem, index: Int) {
                 dampingRatio = Spring.DampingRatioLowBouncy,
                 stiffness = Spring.StiffnessLow
             ),
-            initialOffsetY = { 50 + (index * 20) } // Entra desde abajo
+            initialOffsetY = { 50 + (index * 20) } 
         ) + fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow))
     ) {
-        HistoryItemCard(item = item)
+        HistoryItemCard(item = item, useDarkTheme = useDarkTheme)
     }
 }
 
 @Composable
-fun HistoryItemCard(item: TranslationHistoryItem) {
+fun HistoryItemCard(item: TranslationHistoryItem, useDarkTheme: Boolean) {
+    // --- Color de tarjeta adaptable ---
+    val cardContainerColor = if (useDarkTheme) {
+        Color.DarkGray.copy(alpha = 0.25f)
+    } else {
+        Color(0xFF1F305E).copy(alpha = 0.8f)
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { /* Acción al tocar */ },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            // Azul oscuro semitransparente para efecto moderno
-            containerColor = Color(0xFF1F305E).copy(alpha = 0.8f)
-        ),
-        border = BorderStroke(1.dp, Color(0xFF33A1C9).copy(alpha = 0.3f)), // Borde cian sutil
+        colors = CardDefaults.cardColors(containerColor = cardContainerColor),
+        border = BorderStroke(1.dp, Color(0xFF33A1C9).copy(alpha = 0.3f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icono con fondo circular
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -173,7 +173,7 @@ fun HistoryItemCard(item: TranslationHistoryItem) {
                 Icon(
                     imageVector = Icons.Filled.History,
                     contentDescription = null,
-                    tint = Color(0xFF33A1C9), // Cian de la marca
+                    tint = Color(0xFF33A1C9),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -191,7 +191,6 @@ fun HistoryItemCard(item: TranslationHistoryItem) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Pequeño indicador de tiempo
                     Box(
                         modifier = Modifier
                             .size(6.dp)
@@ -206,12 +205,11 @@ fun HistoryItemCard(item: TranslationHistoryItem) {
                 }
             }
 
-            // Botón de eliminar individual (Decorativo o funcional)
             IconButton(onClick = { /* Acción eliminar item */ }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "Eliminar",
-                    tint = Color.White.copy(alpha = 0.3f), // Sutil
+                    tint = Color.White.copy(alpha = 0.3f),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -226,7 +224,6 @@ fun EmptyHistoryState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Círculo decorativo de fondo
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -261,7 +258,7 @@ fun EmptyHistoryState() {
 }
 
 private fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()) // Formato más compacto
+    val sdf = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()) 
     val netDate = Date(timestamp)
     return sdf.format(netDate).replace(".", "")
 }
