@@ -92,6 +92,7 @@ fun AppNavigation() {
             )
         }
 
+
         composable(Screen.History.route) {
             HistoryScreen(onNavigateBack = { navController.navigateUp() })
         }

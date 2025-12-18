@@ -250,13 +250,13 @@ private fun LoginContent(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.2f))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.2f))
                     Text(
                         text = "o",
                         color = Color.White.copy(alpha = 0.7f),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                    Divider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.2f))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.2f))
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

@@ -32,10 +32,21 @@ import androidx.compose.ui.unit.dp
 import com.nathanaelalba.openhands.R
 import com.nathanaelalba.openhands.features.privacy_policy.PrivacyPolicyScreen
 import com.nathanaelalba.openhands.features.privacy_policy.viewmodel.PrivacyPolicyViewModel
-import com.nathanaelalba.openhands.features.settings.data.SettingsDataStore
-import com.nathanaelalba.openhands.features.settings.presentation.SettingsViewModel
+
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+
+import com.nathanaelalba.openhands.features.welcome.viewmodel.RemoteViewModel
+import com.nathanaelalba.openhands.features.settings.data.SettingsDataStore
+import com.nathanaelalba.openhands.features.settings.presentation.SettingsViewModel
+
+import android.Manifest
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.firebase.messaging.FirebaseMessaging
+
 
 @Composable
 fun SplashAndWelcomeScreen(
@@ -47,14 +58,47 @@ fun SplashAndWelcomeScreen(
     val hasAcceptedPrivacyPolicy by privacyPolicyViewModel.hasAcceptedPrivacyPolicy.collectAsState()
     val themePreference by settingsViewModel.themePreference.collectAsState()
 
+    // Estado para controlar el inicio de la animación
     var startAnimation by remember { mutableStateOf(false) }
 
+    // Uso de notificaciones de appupdate
+    val remoteViewModel: RemoteViewModel = koinViewModel()
+    val welcomeMessage by remoteViewModel.welcomeMessage.collectAsState()
+
+    // Permiso de notificaciones
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            // Por ahora no hacemos nada con el resultado
+        }
+
+    // Iniciar animación
     LaunchedEffect(key1 = true) {
         delay(1000)
         startAnimation = true
     }
 
-    // --- Lógica de Tema --- 
+    // --- Suscripción a topic y permiso, solo si aceptó la política ---
+    LaunchedEffect(hasAcceptedPrivacyPolicy) {
+        if (hasAcceptedPrivacyPolicy) {
+            // Pedir permiso solo en Android 13+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                notificationPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            }
+            // Suscribirse al topic "daily_sign"
+            FirebaseMessaging.getInstance().subscribeToTopic("daily_sign")
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("Firebase", "Suscrito al topic Daily Sign")
+                    }
+                }
+        }
+    }
+
+    // --- Lógica de Tema ---
     val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
     val backgroundBrush = if (useDarkTheme) {
         SolidColor(Color.Black)
@@ -71,21 +115,41 @@ fun SplashAndWelcomeScreen(
         BoxWithConstraints {
             val screenHeight = maxHeight
             if (maxWidth > maxHeight) {
-                LandscapeLayout(startAnimation, onLoginClicked, onRegisterClicked, useDarkTheme)
+                LandscapeLayout(
+                    expanded = startAnimation,
+                    welcomeMessage = welcomeMessage,
+                    onLoginClicked = onLoginClicked,
+                    onRegisterClicked = onRegisterClicked,
+                    useDarkTheme = useDarkTheme
+                )
             } else {
-                PortraitLayout(screenHeight, startAnimation, onLoginClicked, onRegisterClicked, useDarkTheme)
+                PortraitLayout(
+                    screenHeight = screenHeight,
+                    expanded = startAnimation,
+                    welcomeMessage = welcomeMessage,
+                    onLoginClicked = onLoginClicked,
+                    onRegisterClicked = onRegisterClicked,
+                    useDarkTheme = useDarkTheme
+                )
             }
-        }
 
-        if (startAnimation && !hasAcceptedPrivacyPolicy) {
-            var showPolicy by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) {
-                delay(900) 
-                showPolicy = true
+            // Lógica de Política de Privacidad
+            if (startAnimation && !hasAcceptedPrivacyPolicy) {
+                var showPolicy by remember { mutableStateOf(false) }
+                LaunchedEffect(Unit) {
+                    delay(900)
+                    showPolicy = true
+                }
+                if (showPolicy) {
+                    PrivacyPolicyScreen(
+                        onContinueClicked = {
+                            privacyPolicyViewModel.acceptPrivacyPolicy()
+                            // NOTIFICACIONES ahora se manejan automáticamente en LaunchedEffect
+                        }
+                    )
+                }
             }
-            if(showPolicy) {
-                PrivacyPolicyScreen(
-                    onContinueClicked = { privacyPolicyViewModel.acceptPrivacyPolicy() }
+
                 )
             }
         }
@@ -95,7 +159,8 @@ fun SplashAndWelcomeScreen(
 @Composable
 private fun PortraitLayout(
     screenHeight: Dp,
-    expanded: Boolean, 
+    expanded: Boolean, // "expanded" significa que estamos en modo Bienvenida (Logo arriba)
+    welcomeMessage: String,
     onLoginClicked: () -> Unit,
     onRegisterClicked: () -> Unit,
     useDarkTheme: Boolean
@@ -106,7 +171,6 @@ private fun PortraitLayout(
     val finalLogoSize = 200.dp
     val centerPos = (screenHeight / 2) - (initialLogoSize / 2)
     val topPos = 60.dp 
-
     val logoSize by animateDpAsState(
         targetValue = if (expanded) finalLogoSize else initialLogoSize,
         animationSpec = tween(animDuration, easing = animEasing),
@@ -142,20 +206,31 @@ private fun PortraitLayout(
             contentScale = ContentScale.Fit
         )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(top = 24.dp)
-                .graphicsLayer {
-                    alpha = contentAlpha
-                    translationY = if (expanded) 0f else 50f
-                }
-        ) {
-            if (expanded) {
-                WelcomeTexts()
-                Spacer(modifier = Modifier.height(48.dp))
-                AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
-                Spacer(modifier = Modifier.height(40.dp))
+      Box(
+          modifier = Modifier
+              .fillMaxWidth()
+              .graphicsLayer {
+                  alpha = contentAlpha
+                  translationY = if (expanded) 0f else 50f
+              },
+          contentAlignment = Alignment.Center
+      ) {
+          Column(
+              horizontalAlignment = Alignment.CenterHorizontally,
+              modifier = Modifier.padding(top = 24.dp)
+          ) {
+              // Mostrar mensaje de bienvenida
+              WelcomeTexts(welcomeMessage)
+
+              Spacer(modifier = Modifier.height(48.dp))
+
+              // Botones de autenticación
+              AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
+
+              Spacer(modifier = Modifier.height(40.dp))
+          }
+      }
+
             }
         }
     }
@@ -164,6 +239,7 @@ private fun PortraitLayout(
 @Composable
 private fun LandscapeLayout(
     expanded: Boolean,
+    welcomeMessage: String,
     onLoginClicked: () -> Unit,
     onRegisterClicked: () -> Unit,
     useDarkTheme: Boolean
@@ -207,30 +283,33 @@ private fun LandscapeLayout(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
-            ) {
+            ) {     
                 AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
                 Spacer(modifier = Modifier.height(24.dp))
-                WelcomeTexts()
+                WelcomeTexts(welcomeMessage)
             }
         }
     }
 }
 
 @Composable
-private fun WelcomeTexts() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun WelcomeTexts(message: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Bienvenido...",
+            text = "Bienvenido a Openhands",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Traductor bidireccional de Lengua de Señas Boliviana (LSB). Aprende, comunica y conecta con facilidad",
+            text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = Color.LightGray,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }

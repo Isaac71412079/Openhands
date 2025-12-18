@@ -214,7 +214,6 @@ private fun DrawerItem(
     )
 }
 
-// ... (El resto del archivo HomeScreenContent y ActionCard se mantiene igual)
 @Composable
 private fun HomeScreenContent(
     userEmail: String,

@@ -25,6 +25,7 @@ import com.nathanaelalba.openhands.features.textsign.domain.usecase.TranslateTex
 import com.nathanaelalba.openhands.features.textsign.presentation.TextSignViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.nathanaelalba.openhands.features.welcome.viewmodel.RemoteViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -53,6 +54,7 @@ val appModule = module {
     // --- ViewModels ---
     viewModel { PrivacyPolicyViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
+    viewModel { RemoteViewModel() } // Solo de rama-app-update-notifications
     viewModel { LoginViewModel(loginUseCase = get()) }
     viewModel { RegisterViewModel(auth = get(), db = get()) }
     viewModel { HomeViewModel(homeUseCase = get(), loginDataStore = get()) }
@@ -70,4 +72,5 @@ val appModule = module {
     factory { TranslateTextUseCase(repository = get()) }
 
     single<ISignCameraRepository> { SignCameraRepository() }
+
 }
