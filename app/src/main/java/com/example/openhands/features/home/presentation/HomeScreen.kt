@@ -2,9 +2,7 @@ package com.example.openhands.features.home.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.* 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,7 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.ManageAccounts
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -28,7 +27,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.openhands.R
+import com.example.openhands.features.settings.data.SettingsDataStore
+import com.example.openhands.features.settings.presentation.SettingsViewModel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,15 +39,32 @@ fun HomeScreen(
     onTextActionClick: () -> Unit,
     onCameraActionClick: () -> Unit,
     onHistoryClick: () -> Unit,
-    onLogout: () -> Unit
+    onSettingsClick: () -> Unit, 
+    onLogout: () -> Unit,
+    settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
-    // Colores del Drawer
-    val drawerBackgroundColor = Color(0xFFF9F9FF)
-    val drawerContentColor = Color(0xFF152C58)
+    // --- Lógica de Tema Corregida ---
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
 
+    val mainBackgroundBrush = if (useDarkTheme) {
+        SolidColor(Color.Black)
+    } else {
+        Brush.verticalGradient(colors = listOf(Color(0xFF152C58), Color(0xFF0F2042)))
+    }
+
+    val drawerHeaderBrush = if (useDarkTheme) {
+        SolidColor(Color.DarkGray)
+    } else {
+        Brush.linearGradient(colors = listOf(Color(0xFF152C58), Color(0xFF2C4A7E)))
+    }
+    
+    val drawerBackgroundColor = if (useDarkTheme) Color(0xFF121212) else Color(0xFFF9F9FF)
+    val drawerContentColor = if (useDarkTheme) Color.White else Color(0xFF152C58)
+    
     ModalNavigationDrawer(
         drawerState = drawerState,
         scrimColor = Color.Black.copy(alpha = 0.6f),
@@ -60,11 +79,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF152C58), Color(0xFF2C4A7E))
-                            )
-                        ),
+                        .background(drawerHeaderBrush),
                     contentAlignment = Alignment.BottomStart
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
@@ -105,10 +120,12 @@ fun HomeScreen(
                     DrawerItem(
                         icon = Icons.Outlined.History,
                         label = "Historial de Traducciones",
-                        onClick = { onHistoryClick(); scope.launch { drawerState.close() } }
+                        onClick = { onHistoryClick(); scope.launch { drawerState.close() } },
+                        isDestructive = false,
+                        contentColor = drawerContentColor
                     )
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Gray.copy(alpha = 0.1f))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Gray.copy(alpha = 0.2f))
 
                     Text(
                         text = "Configuración",
@@ -117,22 +134,25 @@ fun HomeScreen(
                         modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
                     )
 
-                    // CAMBIO: Se eliminó el item "Mi Cuenta"
+                    DrawerItem(
+                        icon = Icons.Outlined.Settings,
+                        label = "Ajustes",
+                        onClick = { onSettingsClick(); scope.launch { drawerState.close() } },
+                        isDestructive = false,
+                        contentColor = drawerContentColor
+                    )
 
                     DrawerItem(
                         icon = Icons.AutoMirrored.Filled.Logout,
                         label = "Cerrar Sesión",
                         onClick = onLogout,
-                        isDestructive = true
+                        isDestructive = true,
+                        contentColor = drawerContentColor 
                     )
                 }
             }
         }
     ) {
-        val mainBackgroundBrush = Brush.verticalGradient(
-            colors = listOf(Color(0xFF152C58), Color(0xFF0F2042))
-        )
-
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -175,9 +195,10 @@ private fun DrawerItem(
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
-    isDestructive: Boolean = false
+    isDestructive: Boolean = false,
+    contentColor: Color
 ) {
-    val color = if (isDestructive) Color(0xFFFF6B6B) else Color(0xFF152C58)
+    val color = if (isDestructive) Color(0xFFFF6B6B) else contentColor
 
     NavigationDrawerItem(
         icon = { Icon(icon, null, tint = color) },
@@ -193,6 +214,7 @@ private fun DrawerItem(
     )
 }
 
+// ... (El resto del archivo HomeScreenContent y ActionCard se mantiene igual)
 @Composable
 private fun HomeScreenContent(
     userEmail: String,

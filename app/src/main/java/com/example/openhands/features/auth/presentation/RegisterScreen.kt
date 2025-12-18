@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -40,6 +41,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.openhands.R
+import com.example.openhands.features.settings.data.SettingsDataStore
+import com.example.openhands.features.settings.presentation.SettingsViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
@@ -47,18 +50,24 @@ import org.koin.androidx.compose.koinViewModel
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
-    viewModel: RegisterViewModel = koinViewModel()
+    viewModel: RegisterViewModel = koinViewModel(),
+    settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
     var startAnimation by remember { mutableStateOf(false) }
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
     LaunchedEffect(Unit) {
         startAnimation = true
     }
 
+    // --- Lógica de Tema ---
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+    val backgroundBrush = if (useDarkTheme) SolidColor(Color.Black) else SolidColor(Color(0xFF152C58))
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF152C58))
+            .background(backgroundBrush)
     ) {
         Column(
             modifier = Modifier
@@ -68,7 +77,6 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ELEMENTO 0: LOGO
             StaggeredAnimate(visible = startAnimation, index = 0) {
                 Image(
                     painter = painterResource(id = R.drawable.openhands),
@@ -79,7 +87,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            RegisterContent(viewModel, onRegisterSuccess, startAnimation)
+            RegisterContent(viewModel, onRegisterSuccess, startAnimation, useDarkTheme)
         }
 
         IconButton(
@@ -103,7 +111,8 @@ fun RegisterScreen(
 private fun RegisterContent(
     viewModel: RegisterViewModel,
     onRegisterSuccess: () -> Unit,
-    startAnimation: Boolean
+    startAnimation: Boolean,
+    useDarkTheme: Boolean
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -130,7 +139,6 @@ private fun RegisterContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.widthIn(max = 380.dp)
     ) {
-        // ELEMENTO 1: TEXTOS
         StaggeredAnimate(visible = startAnimation, index = 1) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
@@ -149,7 +157,6 @@ private fun RegisterContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ELEMENTO 2: EMAIL
         StaggeredAnimate(visible = startAnimation, index = 2) {
             RegisterTextField(
                 value = email,
@@ -158,13 +165,13 @@ private fun RegisterContent(
                 icon = Icons.Default.Email,
                 keyboardType = KeyboardType.Email,
                 isError = uiState.emailError != null,
-                errorMessage = uiState.emailError
+                errorMessage = uiState.emailError,
+                useDarkTheme = useDarkTheme
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ELEMENTO 3: PASSWORD
         StaggeredAnimate(visible = startAnimation, index = 3) {
             RegisterTextField(
                 value = password,
@@ -176,13 +183,13 @@ private fun RegisterContent(
                 errorMessage = uiState.passwordError,
                 isPassword = true,
                 passwordVisible = passwordVisible,
-                onPasswordVisibilityChange = { passwordVisible = !passwordVisible }
+                onPasswordVisibilityChange = { passwordVisible = !passwordVisible },
+                useDarkTheme = useDarkTheme
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ELEMENTO 4: CONFIRM PASSWORD
         StaggeredAnimate(visible = startAnimation, index = 4) {
             RegisterTextField(
                 value = confirmPassword,
@@ -194,13 +201,13 @@ private fun RegisterContent(
                 errorMessage = uiState.confirmPasswordError,
                 isPassword = true,
                 passwordVisible = confirmPasswordVisible,
-                onPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible }
+                onPasswordVisibilityChange = { confirmPasswordVisible = !confirmPasswordVisible },
+                useDarkTheme = useDarkTheme
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ELEMENTO 5: BOTON
         StaggeredAnimate(visible = startAnimation, index = 5) {
             val buttonBrush = Brush.horizontalGradient(
                 colors = listOf(Color(0xFF1F9EBB), Color(0xFF33A1C9))
@@ -233,22 +240,18 @@ private fun RegisterContent(
         }
 
         if (showSuccessDialog) {
-            RegisterSuccessDialog(onDismiss = { showSuccessDialog = false })
+            RegisterSuccessDialog(onDismiss = { showSuccessDialog = false }, useDarkTheme = useDarkTheme)
         }
     }
 }
 
-// Helper duplicado aquí si RegisterScreen está en otro paquete,
-// o hazlo público en un archivo utils para compartir.
 @Composable
 private fun StaggeredAnimate(
     visible: Boolean,
     index: Int,
     content: @Composable () -> Unit
 ) {
-    // Para Registro, aumentamos un poco el delay porque hay más campos
     val delay = index * 80
-
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically(
@@ -256,7 +259,7 @@ private fun StaggeredAnimate(
                 dampingRatio = Spring.DampingRatioNoBouncy,
                 stiffness = Spring.StiffnessLow
             ),
-            initialOffsetY = { 150 } // Un poco más de recorrido para dramatismo
+            initialOffsetY = { 150 } 
         ) + fadeIn(
             animationSpec = spring(stiffness = Spring.StiffnessLow)
         )
@@ -265,10 +268,20 @@ private fun StaggeredAnimate(
     }
 }
 
-// ... Mantén RegisterTextField y RegisterSuccessDialog como estaban ...
 @Composable
-private fun RegisterTextField(value: String, onValueChange: (String) -> Unit, label: String, icon: ImageVector, keyboardType: KeyboardType, isError: Boolean, errorMessage: String?, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordVisibilityChange: () -> Unit = {}) {
-    // ... Tu código de TextField existente ...
+private fun RegisterTextField(
+    value: String, 
+    onValueChange: (String) -> Unit, 
+    label: String, 
+    icon: ImageVector, 
+    keyboardType: KeyboardType, 
+    isError: Boolean, 
+    errorMessage: String?, 
+    isPassword: Boolean = false, 
+    passwordVisible: Boolean = false, 
+    onPasswordVisibilityChange: () -> Unit = {},
+    useDarkTheme: Boolean
+) {
     val errorColor = Color(0xFFFF6B6B)
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -284,18 +297,31 @@ private fun RegisterTextField(value: String, onValueChange: (String) -> Unit, la
             isError = isError,
             visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = if (isPassword) { { IconButton(onClick = onPasswordVisibilityChange) { Icon(if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility, null, tint = Color.White.copy(alpha = 0.7f)) } } } else null,
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFF33A1C9), unfocusedBorderColor = Color.White.copy(alpha = 0.3f), focusedLabelColor = Color(0xFF33A1C9), unfocusedLabelColor = Color.White.copy(alpha = 0.5f), cursorColor = Color.White, errorBorderColor = errorColor, errorLabelColor = errorColor, focusedContainerColor = Color.White.copy(alpha = 0.05f), unfocusedContainerColor = Color.White.copy(alpha = 0.05f))
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF33A1C9), 
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f), 
+                focusedLabelColor = Color(0xFF33A1C9), 
+                unfocusedLabelColor = Color.White.copy(alpha = 0.5f), 
+                cursorColor = Color.White, 
+                errorBorderColor = errorColor, 
+                errorLabelColor = errorColor, 
+                focusedContainerColor = if (useDarkTheme) Color.Gray.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.05f),
+                unfocusedContainerColor = if (useDarkTheme) Color.Gray.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.05f)
+            )
         )
         if (errorMessage != null) { Text(text = errorMessage, color = errorColor, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 8.dp, top = 4.dp)) }
     }
 }
 
 @Composable
-private fun RegisterSuccessDialog(onDismiss: () -> Unit) {
-    // ... Tu código de Dialog existente ...
+private fun RegisterSuccessDialog(onDismiss: () -> Unit, useDarkTheme: Boolean) {
     val successGradientBrush = Brush.linearGradient(colors = listOf(Color(0xFF33A1C9), Color(0xFF1F9EBB)))
     Dialog(onDismissRequest = {}) {
-        Surface(shape = RoundedCornerShape(28.dp), color = Color(0xFF152C58), border = BorderStroke(1.5.dp, Color(0xFF33A1C9).copy(alpha = 0.5f)), shadowElevation = 10.dp) {
+        Surface(
+            shape = RoundedCornerShape(28.dp), 
+            color = if (useDarkTheme) Color.DarkGray else Color(0xFF152C58), 
+            border = BorderStroke(1.5.dp, Color(0xFF33A1C9).copy(alpha = 0.5f)), 
+            shadowElevation = 10.dp) {
             Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(80.dp).graphicsLayer(alpha = 0.99f).drawWithCache { onDrawWithContent { drawContent(); drawRect(brush = successGradientBrush, blendMode = BlendMode.SrcAtop) } })
                 Spacer(modifier = Modifier.height(24.dp))

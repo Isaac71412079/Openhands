@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -36,10 +37,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.openhands.R
+import com.example.openhands.features.settings.data.SettingsDataStore
+import com.example.openhands.features.settings.presentation.SettingsViewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.Image
@@ -47,21 +49,30 @@ import androidx.compose.foundation.Image
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
+    settingsViewModel: SettingsViewModel = koinViewModel(),
     onLoginSuccess: () -> Unit = {},
     onNavigateBack: () -> Unit,
     onRegisterClicked: () -> Unit
 ) {
-    // Estado global de entrada
     var startAnimation by remember { mutableStateOf(false) }
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
     LaunchedEffect(Unit) {
         startAnimation = true
     }
 
+    // --- Lógica de Tema --- 
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+    val backgroundBrush = if (useDarkTheme) {
+        SolidColor(Color.Black)
+    } else {
+        SolidColor(Color(0xFF152C58))
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF152C58))
+            .background(backgroundBrush)
     ) {
         Column(
             modifier = Modifier
@@ -71,7 +82,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ELEMENTO 1: LOGO (Entra primero)
             StaggeredAnimate(visible = startAnimation, index = 0) {
                 Image(
                     painter = painterResource(id = R.drawable.openhands),
@@ -82,7 +92,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            LoginContent(viewModel, onLoginSuccess, onRegisterClicked, startAnimation)
+            LoginContent(viewModel, onLoginSuccess, onRegisterClicked, startAnimation, useDarkTheme)
         }
 
         IconButton(
@@ -107,7 +117,8 @@ private fun LoginContent(
     viewModel: LoginViewModel,
     onLoginSuccess: () -> Unit,
     onRegisterClicked: () -> Unit,
-    startAnimation: Boolean // Recibimos el estado de animación
+    startAnimation: Boolean, 
+    useDarkTheme: Boolean
 ) {
     var email by rememberSaveable { mutableStateOf(viewModel.email) }
     var password by rememberSaveable { mutableStateOf(viewModel.password) }
@@ -134,7 +145,6 @@ private fun LoginContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.widthIn(max = 380.dp)
     ) {
-        // ELEMENTO 2: TEXTOS (Entra con un poco de retraso)
         StaggeredAnimate(visible = startAnimation, index = 1) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
@@ -153,7 +163,6 @@ private fun LoginContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ELEMENTO 3: INPUT EMAIL (Más retraso)
         StaggeredAnimate(visible = startAnimation, index = 2) {
             CustomLoginTextField(
                 value = email,
@@ -162,13 +171,13 @@ private fun LoginContent(
                 icon = Icons.Default.Email,
                 keyboardType = KeyboardType.Email,
                 isError = uiState.emailError != null,
-                errorMessage = uiState.emailError
+                errorMessage = uiState.emailError,
+                useDarkTheme = useDarkTheme
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ELEMENTO 4: INPUT PASSWORD (Más retraso aún)
         StaggeredAnimate(visible = startAnimation, index = 3) {
             CustomLoginTextField(
                 value = password,
@@ -180,7 +189,8 @@ private fun LoginContent(
                 errorMessage = uiState.passwordError,
                 isPassword = true,
                 passwordVisible = passwordVisible,
-                onPasswordVisibilityChange = { passwordVisible = !passwordVisible }
+                onPasswordVisibilityChange = { passwordVisible = !passwordVisible },
+                useDarkTheme = useDarkTheme
             )
         }
 
@@ -190,7 +200,6 @@ private fun LoginContent(
             colors = listOf(Color(0xFF1F9EBB), Color(0xFF33A1C9))
         )
 
-        // ELEMENTO 5: BOTONES (Entran al final)
         StaggeredAnimate(visible = startAnimation, index = 4) {
             Column {
                 Button(
@@ -258,9 +267,9 @@ private fun LoginContent(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(50),
-                    border = BorderStroke(1.dp, Color(0xFFF0E8FF)),
+                    border = BorderStroke(1.dp, if (useDarkTheme) Color.White.copy(alpha = 0.7f) else Color(0xFFF0E8FF)),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFF0E8FF)
+                        contentColor = if (useDarkTheme) Color.White else Color(0xFFF0E8FF)
                     )
                 ) {
                     Text(
@@ -273,50 +282,33 @@ private fun LoginContent(
         }
 
         if (showSuccessDialog) {
-            SuccessDialog(onDismiss = { showSuccessDialog = false })
+            SuccessDialog(onDismiss = { showSuccessDialog = false }, useDarkTheme = useDarkTheme)
         }
     }
 }
 
-// --- HELPER DE ANIMACIÓN FLUIDA ---
 @Composable
 fun StaggeredAnimate(
     visible: Boolean,
     index: Int,
     content: @Composable () -> Unit
 ) {
-    // Calculamos un retraso basado en el índice (0, 1, 2...)
-    // Esto crea el efecto "cascada"
     val delay = index * 100
-
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically(
-            // Usamos Spring (Física) para suavidad extrema. LowStiffness = Movimiento relajado.
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
                 stiffness = Spring.StiffnessLow
             ),
-            initialOffsetY = { 100 } // Empieza 100px abajo
+            initialOffsetY = { 100 } 
         ) + fadeIn(
             animationSpec = spring(stiffness = Spring.StiffnessLow)
         )
     ) {
-        // Un LaunchedEffect dentro para aplicar el delay real visualmente si fuera necesario,
-        // pero la configuración de Spring suele manejarlo bien.
-        // Si queremos forzar el delay exacto, usamos tween con delayMillis,
-        // pero tween es lineal. Para fluidez, Spring es mejor.
-        // Combinamos la física con un modificador de layout si queremos delay exacto,
-        // pero AnimatedVisibility directo con Spring es lo más limpio y fluido hoy en día.
-
-        // OPCIÓN FLUIDA CON SPRING (La que está puesta):
-        // Se siente como si los elementos flotaran hacia su lugar.
         content()
     }
 }
-
-// --- TEXT FIELD Y DIALOGO IGUAL QUE ANTES (Mantenlos igual) ---
-// (He copiado tu CustomLoginTextField y SuccessDialog para que el archivo esté completo)
 
 @Composable
 fun CustomLoginTextField(
@@ -329,7 +321,8 @@ fun CustomLoginTextField(
     errorMessage: String?,
     isPassword: Boolean = false,
     passwordVisible: Boolean = false,
-    onPasswordVisibilityChange: () -> Unit = {}
+    onPasswordVisibilityChange: () -> Unit = {},
+    useDarkTheme: Boolean
 ) {
     val errorColor = Color(0xFFFF6B6B)
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -354,8 +347,8 @@ fun CustomLoginTextField(
                 cursorColor = Color.White,
                 errorBorderColor = errorColor,
                 errorLabelColor = errorColor,
-                focusedContainerColor = Color.White.copy(alpha = 0.05f),
-                unfocusedContainerColor = Color.White.copy(alpha = 0.05f)
+                focusedContainerColor = if (useDarkTheme) Color.Gray.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.05f),
+                unfocusedContainerColor = if (useDarkTheme) Color.Gray.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.05f)
             )
         )
         if (errorMessage != null) {
@@ -365,10 +358,15 @@ fun CustomLoginTextField(
 }
 
 @Composable
-private fun SuccessDialog(onDismiss: () -> Unit) {
+private fun SuccessDialog(onDismiss: () -> Unit, useDarkTheme: Boolean) {
     val successGradientBrush = Brush.linearGradient(colors = listOf(Color(0xFF33A1C9), Color(0xFF1F9EBB)))
     Dialog(onDismissRequest = {}) {
-        Surface(shape = RoundedCornerShape(28.dp), color = Color(0xFF152C58), border = BorderStroke(1.5.dp, Color(0xFF33A1C9).copy(alpha = 0.5f)), shadowElevation = 10.dp) {
+        Surface(
+            shape = RoundedCornerShape(28.dp), 
+            color = if (useDarkTheme) Color.DarkGray else Color(0xFF152C58), 
+            border = BorderStroke(1.5.dp, Color(0xFF33A1C9).copy(alpha = 0.5f)), 
+            shadowElevation = 10.dp
+        ) {
             Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(80.dp).graphicsLayer(alpha = 0.99f).drawWithCache { onDrawWithContent { drawContent(); drawRect(brush = successGradientBrush, blendMode = BlendMode.SrcAtop) } })
                 Spacer(modifier = Modifier.height(24.dp))

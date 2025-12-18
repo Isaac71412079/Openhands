@@ -12,6 +12,7 @@ import com.example.openhands.features.home.presentation.HistoryScreen
 import com.example.openhands.features.home.presentation.HomeScreen
 import com.example.openhands.features.home.presentation.HomeViewModel
 import com.example.openhands.features.login.presentation.LoginScreen
+import com.example.openhands.features.settings.presentation.SettingsScreen
 import com.example.openhands.features.signcamera.presentation.SignCameraScreen
 import com.example.openhands.features.textsign.presentation.TextSignScreen
 import com.example.openhands.features.textsign.presentation.WebViewScreen
@@ -65,6 +66,7 @@ fun AppNavigation() {
                 onTextActionClick = { navController.navigate(Screen.TextSign.route) },
                 onCameraActionClick = { navController.navigate(Screen.SignCamera.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
                 onLogout = {
                     homeViewModel.logout()
                     navController.navigate(Screen.SplashAndWelcome.route) {
@@ -72,6 +74,10 @@ fun AppNavigation() {
                     }
                 }
             )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(onNavigateBack = { navController.navigateUp() })
         }
 
         composable(Screen.History.route) {

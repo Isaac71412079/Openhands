@@ -14,6 +14,8 @@ import com.example.openhands.features.login.domain.usecase.LoginUseCase
 import com.example.openhands.features.login.presentation.LoginViewModel
 import com.example.openhands.features.privacy_policy.data.PrivacyPolicyDataStore
 import com.example.openhands.features.privacy_policy.viewmodel.PrivacyPolicyViewModel
+import com.example.openhands.features.settings.data.SettingsDataStore
+import com.example.openhands.features.settings.presentation.SettingsViewModel
 import com.example.openhands.features.signcamera.data.repository.SignCameraRepository
 import com.example.openhands.features.signcamera.domain.repository.ISignCameraRepository
 import com.example.openhands.features.signcamera.presentation.SignCameraViewModel
@@ -43,30 +45,29 @@ val appModule = module {
     }
     single { get<AppDatabase>().historyDao() }
 
-    // --- Privacy Policy ---
+    // --- Preferences ---
     single { PrivacyPolicyDataStore(androidContext()) }
-    viewModel { PrivacyPolicyViewModel(get()) }
-
-    // --- Login & Auth ---
+    single { SettingsDataStore(androidContext()) }
     single { LoginDataStore(androidContext()) }
+
+    // --- ViewModels ---
+    viewModel { PrivacyPolicyViewModel(get()) }
+    viewModel { SettingsViewModel(get()) }
+    viewModel { LoginViewModel(loginUseCase = get()) }
+    viewModel { RegisterViewModel(auth = get(), db = get()) }
+    viewModel { HomeViewModel(homeUseCase = get(), loginDataStore = get()) }
+    viewModel { TextSignViewModel(translateTextUseCase = get(), homeUseCase = get()) }
+    viewModel { SignCameraViewModel(repository = get()) }
+
+    // --- UseCases & Repositories ---
     single<ILoginRepository> { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
-    viewModel { LoginViewModel(loginUseCase = get()) }
 
-    // CAMBIO: Ahora inyectamos auth y db
-    viewModel { RegisterViewModel(auth = get(), db = get()) }
-
-    // --- Home (Ahora usa Room) ---
     single<IHomeRepository> { HomeRepository(historyDao = get()) }
     factory { HomeUseCase(repository = get()) }
-    viewModel { HomeViewModel(homeUseCase = get(), loginDataStore = get()) }
 
-    // --- TextSign ---
     single<ITextSignRepository> { TextSignRepository() }
     factory { TranslateTextUseCase(repository = get()) }
-    viewModel { TextSignViewModel(translateTextUseCase = get(), homeUseCase = get()) }
 
-    // --- SignCamera ---
     single<ISignCameraRepository> { SignCameraRepository() }
-    viewModel { SignCameraViewModel(repository = get()) }
 }
