@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.openhands"
+    namespace = "com.nathanaelalba.openhands"
     compileSdk = 36
 
     defaultConfig {
