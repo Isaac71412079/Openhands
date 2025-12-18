@@ -149,9 +149,6 @@ fun SplashAndWelcomeScreen(
                     )
                 }
             }
-
-                )
-            }
         }
     }
 }
@@ -165,76 +162,71 @@ private fun PortraitLayout(
     onRegisterClicked: () -> Unit,
     useDarkTheme: Boolean
 ) {
-    val animDuration = 800
-    val animEasing = FastOutSlowInEasing
-    val initialLogoSize = 300.dp
-    val finalLogoSize = 200.dp
-    val centerPos = (screenHeight / 2) - (initialLogoSize / 2)
-    val topPos = 60.dp 
-    val logoSize by animateDpAsState(
-        targetValue = if (expanded) finalLogoSize else initialLogoSize,
-        animationSpec = tween(animDuration, easing = animEasing),
-        label = "LogoSize"
-    )
-
-    val topSpacerHeight by animateDpAsState(
-        targetValue = if (expanded) topPos else centerPos,
-        animationSpec = tween(animDuration, easing = animEasing),
-        label = "TopSpacer"
-    )
-
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 300),
-        label = "ContentAlpha"
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(modifier = Modifier.height(topSpacerHeight))
-
-        Image(
-            painter = painterResource(id = R.drawable.openhands),
-            contentDescription = "Logo de Openhands",
-            modifier = Modifier.size(logoSize),
-            contentScale = ContentScale.Fit
+        val animDuration = 800
+        val animEasing = FastOutSlowInEasing
+        val initialLogoSize = 300.dp
+        val finalLogoSize = 200.dp
+        val centerPos = (screenHeight / 2) - (initialLogoSize / 2)
+        val topPos = 60.dp
+        val logoSize by animateDpAsState(
+            targetValue = if (expanded) finalLogoSize else initialLogoSize,
+            animationSpec = tween(animDuration, easing = animEasing),
+            label = "LogoSize"
         )
 
-      Box(
-          modifier = Modifier
-              .fillMaxWidth()
-              .graphicsLayer {
-                  alpha = contentAlpha
-                  translationY = if (expanded) 0f else 50f
-              },
-          contentAlignment = Alignment.Center
-      ) {
-          Column(
-              horizontalAlignment = Alignment.CenterHorizontally,
-              modifier = Modifier.padding(top = 24.dp)
-          ) {
-              // Mostrar mensaje de bienvenida
-              WelcomeTexts(welcomeMessage)
+        val topSpacerHeight by animateDpAsState(
+            targetValue = if (expanded) topPos else centerPos,
+            animationSpec = tween(animDuration, easing = animEasing),
+            label = "TopSpacer"
+        )
 
-              Spacer(modifier = Modifier.height(48.dp))
+        val contentAlpha by animateFloatAsState(
+            targetValue = if (expanded) 1f else 0f,
+            animationSpec = tween(durationMillis = 1000, delayMillis = 300),
+            label = "ContentAlpha"
+        )
 
-              // Botones de autenticación
-              AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Spacer(modifier = Modifier.height(topSpacerHeight))
 
-              Spacer(modifier = Modifier.height(40.dp))
-          }
-      }
+            Image(
+                painter = painterResource(id = R.drawable.openhands),
+                contentDescription = "Logo de Openhands",
+                modifier = Modifier.size(logoSize),
+                contentScale = ContentScale.Fit)
+              Box(
+                  modifier = Modifier
+                      .fillMaxWidth()
+                      .graphicsLayer {
+                          alpha = contentAlpha
+                          translationY = if (expanded) 0f else 50f
+                      },
+                  contentAlignment = Alignment.Center)
+              {
+              Column(
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  modifier = Modifier.padding(top = 24.dp) )
+                  {
+                      // Mostrar mensaje de bienvenida
+                      WelcomeTexts(welcomeMessage)
 
-            }
+                      Spacer(modifier = Modifier.height(48.dp))
+
+                      // Botones de autenticación
+                      AuthButtons(onLoginClicked, onRegisterClicked, useDarkTheme)
+
+                      Spacer(modifier = Modifier.height(40.dp))
+                  }
+              }
         }
     }
-}
 
 @Composable
 private fun LandscapeLayout(
