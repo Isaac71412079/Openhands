@@ -15,41 +15,48 @@ import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nathanaelalba.openhands.R
+import com.nathanaelalba.openhands.features.settings.data.SettingsDataStore
+import com.nathanaelalba.openhands.features.settings.presentation.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextSignScreen(
     viewModel: TextSignViewModel = koinViewModel(),
+    settingsViewModel: SettingsViewModel = koinViewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToMoreLanguages: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
-    // Fondo con degradado sutil para dar profundidad
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF152C58), Color(0xFF0F1E3B))
-    )
+    // --- Lógica de Tema ---
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+    val backgroundBrush = if (useDarkTheme) SolidColor(Color.Black) else Brush.verticalGradient(colors = listOf(Color(0xFF152C58), Color(0xFF0F1E3B)))
+    val topAppBarColor = if (useDarkTheme) Color.White else Color.White
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar( // Título centrado se ve mejor
-                title = {
+            CenterAlignedTopAppBar(
+                title = { 
                     Text(
-                        "Traductor LSB",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White,
+                        "Traductor LSB", 
+                        style = MaterialTheme.typography.titleLarge, 
+                        color = topAppBarColor, 
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -63,29 +70,23 @@ fun TextSignScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.White
+                            tint = topAppBarColor
                         )
                     }
                 },
                 actions = {
-                    // Logo pequeño y sutil
                     Image(
                         painter = painterResource(id = R.drawable.openhands),
                         contentDescription = "Logo",
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(36.dp)
-                            .clip(CircleShape)
+                        modifier = Modifier.padding(end = 16.dp).size(36.dp).clip(CircleShape)
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
             )
         },
-        containerColor = Color.Transparent, // Importante para ver el degradado del Box
+        containerColor = Color.Transparent,
         bottomBar = {
-            BottomInputArea(viewModel, keyboardController)
+            BottomInputArea(viewModel, keyboardController, useDarkTheme)
         }
     ) { paddingValues ->
         Box(
@@ -98,12 +99,11 @@ fun TextSignScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp), // Padding lateral más limpio
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Subtítulo descriptivo
                 Text(
                     text = "Escribe texto para visualizar la seña",
                     style = MaterialTheme.typography.bodyMedium,
@@ -113,12 +113,11 @@ fun TextSignScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- CONTENEDOR DE VIDEO (Estilo Pantalla de Cine) ---
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(420.dp), // Un poco más alto para mejor vista
-                    shape = RoundedCornerShape(32.dp), // Bordes muy redondeados
+                        .height(420.dp),
+                    shape = RoundedCornerShape(32.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Black)
                 ) {
@@ -140,16 +139,15 @@ fun TextSignScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // --- BOTÓN MÁS IDIOMAS (Estilo Píldora Elegante) ---
                 OutlinedButton(
                     onClick = onNavigateToMoreLanguages,
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .height(50.dp),
                     shape = RoundedCornerShape(50),
-                    border = BorderStroke(1.dp, Color(0xFFF0E8FF).copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFF0E8FF)
+                        contentColor = Color.White
                     )
                 ) {
                     Icon(
@@ -165,17 +163,20 @@ fun TextSignScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp)) // Espacio final
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
 }
 
 @Composable
-private fun BottomInputArea(viewModel: TextSignViewModel, keyboardController: Any?) {
-    // Panel inferior con un color ligeramente diferente para separarlo visualmente
+private fun BottomInputArea(viewModel: TextSignViewModel, keyboardController: Any?, useDarkTheme: Boolean) {
+    val bottomSurfaceColor = if (useDarkTheme) Color.Black else Color(0xFF0F1E3B)
+    val textFieldBackgroundColor = if (useDarkTheme) Color.DarkGray else Color.White
+    val textFieldTextColor = if (useDarkTheme) Color.White else Color.Black
+
     Surface(
-        color = Color(0xFF0F1E3B), // Un tono más oscuro que el fondo
+        color = bottomSurfaceColor,
         shadowElevation = 16.dp,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
@@ -183,31 +184,26 @@ private fun BottomInputArea(viewModel: TextSignViewModel, keyboardController: An
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .navigationBarsPadding(), // Respetar gestos del sistema
+                .navigationBarsPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Input tipo "Chat"
             TextField(
                 value = viewModel.inputText,
                 onValueChange = viewModel::onTextChanged,
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp), // Altura cómoda
+                    .height(56.dp),
                 placeholder = {
-                    Text(
-                        "Escribe aquí...",
-                        color = Color.Gray
-                    )
+                    Text("Escribe aquí...", color = if (useDarkTheme) Color.LightGray else Color.Gray)
                 },
-                shape = RoundedCornerShape(50), // Completamente redondo
+                shape = RoundedCornerShape(50),
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    cursorColor = Color(0xFF152C58),
-                    // Quitar la línea de abajo fea por defecto
+                    focusedContainerColor = textFieldBackgroundColor,
+                    unfocusedContainerColor = textFieldBackgroundColor,
+                    focusedTextColor = textFieldTextColor,
+                    unfocusedTextColor = textFieldTextColor,
+                    cursorColor = if (useDarkTheme) Color.White else Color(0xFF152C58),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
@@ -216,14 +212,13 @@ private fun BottomInputArea(viewModel: TextSignViewModel, keyboardController: An
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Botón de Enviar Flotante
             FloatingActionButton(
                 onClick = {
                     viewModel.onTranslateClicked()
                     (keyboardController as? androidx.compose.ui.platform.SoftwareKeyboardController)?.hide()
                 },
-                containerColor = Color(0xFFF0E8FF), // Color de acento claro
-                contentColor = Color(0xFF152C58), // Icono oscuro
+                containerColor = if (useDarkTheme) Color.Gray else Color(0xFFF0E8FF),
+                contentColor = if (useDarkTheme) Color.White else Color(0xFF152C58),
                 shape = CircleShape,
                 modifier = Modifier.size(56.dp)
             ) {
@@ -250,7 +245,6 @@ private fun VideoPlaceholder() {
                 )
             )
     ) {
-        // Círculo decorativo detrás del icono
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier

@@ -12,6 +12,8 @@ import com.nathanaelalba.openhands.features.home.presentation.HistoryScreen
 import com.nathanaelalba.openhands.features.home.presentation.HomeScreen
 import com.nathanaelalba.openhands.features.home.presentation.HomeViewModel
 import com.nathanaelalba.openhands.features.login.presentation.LoginScreen
+import com.nathanaelalba.openhands.features.privacy_policy.PrivacyPolicyScreen
+import com.nathanaelalba.openhands.features.settings.presentation.SettingsScreen
 import com.nathanaelalba.openhands.features.signcamera.presentation.SignCameraScreen
 import com.nathanaelalba.openhands.features.textsign.presentation.TextSignScreen
 import com.nathanaelalba.openhands.features.textsign.presentation.WebViewScreen
@@ -57,22 +59,39 @@ fun AppNavigation() {
         }
 
         composable(Screen.Home.route) {
+            // --- LÍNEAS CORREGIDAS ---
             val homeViewModel: HomeViewModel = koinViewModel()
             val userEmail by homeViewModel.userEmail.collectAsState()
 
             HomeScreen(
-                userEmail = userEmail,
+                userEmail = userEmail, // <-- Parámetro restaurado
                 onTextActionClick = { navController.navigate(Screen.TextSign.route) },
                 onCameraActionClick = { navController.navigate(Screen.SignCamera.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
                 onLogout = {
-                    homeViewModel.logout()
+                    homeViewModel.logout() // <-- Llamada restaurada
                     navController.navigate(Screen.SplashAndWelcome.route) {
                         popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
                     }
                 }
             )
         }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.navigateUp() },
+                onPrivacyPolicyClick = { navController.navigate(Screen.PrivacyPolicy.route) } 
+            )
+        }
+
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(
+                showAppBar = true, 
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+
 
         composable(Screen.History.route) {
             HistoryScreen(onNavigateBack = { navController.navigateUp() })

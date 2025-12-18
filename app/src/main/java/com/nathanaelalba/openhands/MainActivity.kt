@@ -8,49 +8,51 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import com.nathanaelalba.openhands.features.appupdate.domain.AppUpdateConfig
 import com.nathanaelalba.openhands.features.appupdate.presentation.AppUpdateManager
+import com.nathanaelalba.openhands.features.settings.data.SettingsDataStore
+import com.nathanaelalba.openhands.features.settings.presentation.SettingsViewModel
 import com.nathanaelalba.openhands.navigation.AppNavigation
 import com.nathanaelalba.openhands.ui.theme.OpenhandsTheme
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.firebase.auth.ktx.auth
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
+
+    private val settingsViewModel: SettingsViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // ---------------------------- Solicitud de permiso de notificaciones (Android 13+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val requestPermissionLauncher =
-                registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                    if (isGranted) {
-                        Log.d("FCM", "Permiso de notificaciones concedido")
-                        subscribeToDailySignTopic()
-                    } else {
-                        Log.d("FCM", "Permiso de notificaciones denegado")
-                    }
+        val notificationLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) {
+                    Log.d("FCM", "Permiso de notificaciones concedido")
+                    subscribeToDailySignTopic()
+                } else {
+                    Log.d("FCM", "Permiso de notificaciones denegado")
                 }
+            }
 
-            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            // Para Android <13 no se requiere permiso explícito
             subscribeToDailySignTopic()
         }
 
         setContent {
-            OpenhandsTheme {
+            val themePreference by settingsViewModel.themePreference.collectAsState()
+            val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+
+            OpenhandsTheme(darkTheme = useDarkTheme) {
                 AppNavigation()
 
                 // ----------------------------
@@ -59,18 +61,17 @@ class MainActivity : ComponentActivity() {
                 var updateConfig by remember { mutableStateOf<AppUpdateConfig?>(null) }
 
                 LaunchedEffect(Unit) {
-                    //token de firebase
+                    // Token de Firebase
                     FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                         Log.d("FCM", "TOKEN => $token")
                     }
-                    // 🔹 Usar versión real de la app
+
+                    // Usar versión real de la app
                     val currentVersionCode = BuildConfig.VERSION_CODE
                     val config = AppUpdateManager.shouldShowUpdate(currentVersionCode)
                     if (config != null) {
                         updateConfig = config
                         showDialog = true
-
-                        // 🔹 Mandar notificación de update automáticamente
                         showUpdateNotification(config)
                     }
                 }
@@ -86,8 +87,8 @@ class MainActivity : ComponentActivity() {
         }
 
         // ----------------------------
-        // Verificación de Firebase
-        //testFirebaseConfig()
+        // Verificación de Firebase (pruebas)
+        testFirebaseConfig()
     }
 
     // ---------------------------- Suscribirse al topic de Firebase
@@ -134,16 +135,15 @@ class MainActivity : ComponentActivity() {
     }
 
     // ---------------------------- Prueba de Firebase
-/*    private fun testFirebaseConfig() {
+    private fun testFirebaseConfig() {
         try {
             val auth = Firebase.auth
             val db = Firebase.firestore
             Log.d("FirebaseTest", "Firebase Auth OK: ${auth != null}")
             Log.d("FirebaseTest", "Firebase Firestore OK: ${db != null}")
-            Toast.makeText(this, "Firebase Config OK", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e("FirebaseTest", "Error: ${e.message}")
-            Toast.makeText(this, "Firebase ERROR: ${e.message}", Toast.LENGTH_LONG).show()
         }
-    }*/
+    }
 }
+

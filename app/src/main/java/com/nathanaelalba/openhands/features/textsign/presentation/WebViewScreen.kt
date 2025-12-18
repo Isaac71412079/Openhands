@@ -11,33 +11,39 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.nathanaelalba.openhands.features.settings.data.SettingsDataStore
+import com.nathanaelalba.openhands.features.settings.presentation.SettingsViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebViewScreen(
     url: String,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
-    // 1. Obtener el contexto para acceder a la Activity
     val context = LocalContext.current
+    val themePreference by settingsViewModel.themePreference.collectAsState()
 
-    // 2. DisposableEffect para gestionar el ciclo de vida de la orientación
     DisposableEffect(Unit) {
         val activity = context as? Activity ?: return@DisposableEffect onDispose {}
-        // Guardar la orientación original
         val originalOrientation = activity.requestedOrientation
-        // 3. Forzar la orientación a vertical
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         onDispose {
-            // 4. Restaurar la orientación original al salir de la pantalla
             activity.requestedOrientation = originalOrientation
         }
     }
+
+    // --- Lógica de Tema ---
+    val useDarkTheme = themePreference == SettingsDataStore.THEME_DARK
+    val topBarColor = if (useDarkTheme) Color.Black else Color(0xFF152C58)
 
     Scaffold(
         topBar = {
@@ -52,12 +58,12 @@ fun WebViewScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF152C58))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = topBarColor)
             )
         }
     ) { paddingValues ->
         AndroidView(
-            factory = { factoryContext -> // Renombrar para evitar shadowing
+            factory = { factoryContext ->
                 WebView(factoryContext).apply {
                     settings.javaScriptEnabled = true
                     settings.loadWithOverviewMode = true
